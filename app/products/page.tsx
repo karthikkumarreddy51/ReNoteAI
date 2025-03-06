@@ -16,7 +16,7 @@ export default function ProductsPage() {
   const [priceRange, setPriceRange] = useState([0, 100])
   const [showFilters, setShowFilters] = useState(false)
 
-  // Mock products data
+  // Updated Mock products data
   const products = [
     {
       id: "1",
@@ -69,7 +69,7 @@ export default function ProductsPage() {
       price: 22.99,
       discountedPrice: 19.99,
       image: "/placeholder.svg?height=300&width=300",
-      status: null,
+      // Removed status (was null)
       rating: 4.6,
       reviewCount: 142,
     },
@@ -80,7 +80,7 @@ export default function ProductsPage() {
       price: 39.99,
       discountedPrice: 34.99,
       image: "/placeholder.svg?height=300&width=300",
-      status: null,
+      // Removed status (was null)
       rating: 4.8,
       reviewCount: 76,
     },
@@ -102,7 +102,7 @@ export default function ProductsPage() {
       price: 19.99,
       discountedPrice: 17.99,
       image: "/placeholder.svg?height=300&width=300",
-      status: null,
+      // Removed status (was null)
       rating: 4.9,
       reviewCount: 112,
     },
@@ -113,7 +113,7 @@ export default function ProductsPage() {
       price: 29.99,
       discountedPrice: 29.99,
       image: "/placeholder.svg?height=300&width=300",
-      status: null,
+      // Removed status (was null)
       rating: 4.8,
       reviewCount: 94,
     },
@@ -348,4 +348,3 @@ export default function ProductsPage() {
     </div>
   )
 }
-

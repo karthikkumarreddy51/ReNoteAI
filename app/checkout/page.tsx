@@ -49,15 +49,20 @@ export default function CheckoutPage() {
     { id: "free", name: "Free Shipping", price: 0, days: "5-7", minimum: 50 },
   ]
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  // Helper function that performs payment processing
+  const processPayment = async () => {
     setIsProcessing(true)
-
     // Simulate payment processing
     setTimeout(() => {
       // In a real app, you would redirect to Razorpay or process the payment
       window.location.href = "/checkout/success"
     }, 2000)
+  }
+
+  // Form submit handler (for the form element)
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    await processPayment()
   }
 
   return (
@@ -158,7 +163,7 @@ export default function CheckoutPage() {
                         <RadioGroupItem
                           value={rate.id}
                           id={`shipping-${rate.id}`}
-                          disabled={rate.minimum && subtotal < rate.minimum}
+                          disabled={rate.minimum !== undefined ? subtotal < rate.minimum : false}
                         />
                         <div className="ml-3">
                           <Label htmlFor={`shipping-${rate.id}`} className="font-medium">
@@ -337,7 +342,8 @@ export default function CheckoutPage() {
             </div>
 
             <div className="hidden lg:block">
-              <Button type="submit" className="w-full" size="lg" disabled={isProcessing} onClick={handleSubmit}>
+              {/* Use the helper function directly onClick */}
+              <Button type="button" className="w-full" size="lg" disabled={isProcessing} onClick={processPayment}>
                 {isProcessing ? "Processing..." : `Pay $${total.toFixed(2)}`}
               </Button>
             </div>
@@ -362,4 +368,3 @@ export default function CheckoutPage() {
     </div>
   )
 }
-

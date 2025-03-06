@@ -36,7 +36,7 @@ export default function RootLayout({
             <Footer />
             <Toaster />
             <WhatsAppChat />
-            {/* SubscriptionPopup displays the discount offer on first visit */}
+            {/* Render the subscription popup only once in the RootLayout */}
             <SubscriptionPopup />
           </SearchProvider>
         </CartProvider>
