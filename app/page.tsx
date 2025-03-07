@@ -1,61 +1,100 @@
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Check, ArrowRight, Star, Truck, RefreshCw, Shield } from "lucide-react"
-import ProductCard from "@/components/product-card"
-// Import the updated SubscriptionPopup
-import SubscriptionPopup from "@/components/subscription-popup"
+"use client";
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Check, ArrowRight, Star, RefreshCw, Shield } from "lucide-react";
+import ProductCard from "@/components/product-card";
+import SubscriptionPopup from "@/components/subscription-popup";
+import { useCart } from "@/context/cart-context";
+import { useRouter } from "next/navigation";
+
+// Define your Product interface
+interface Product {
+  id: string;
+  image?: string;
+  name: string;
+  status?: string;
+  description: string;
+  rating: number;
+  reviewCount: number;
+  discountedPrice: number;
+  price: number;
+  customizations?: {
+    coverDesign: string[];
+    pageLayout: string[];
+    paperType: string[];
+    bindingType: string[];
+  };
+}
 
 export default function HomePage() {
-  // Mock featured products
-  const featuredProducts = [
+  const { addToCart } = useCart();
+  const router = useRouter();
+
+  // Annotate the product parameter with the Product type
+  const handleAddToCart = (product: Product) => {
+    const priceToUse =
+      product.discountedPrice < product.price ? product.discountedPrice : product.price;
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: priceToUse,
+      quantity: 1,
+      image: product.image,
+    });
+    router.push("/cart");
+  };
+
+  // Updated featured products array in desired order/labels.
+  const featuredProducts: Product[] = [
     {
-      id: "1",
-      name: "Air – AI-Powered Smart Reusable Notebook",
-      description: "Smart Templates & AI Assistance",
-      price: 24.99,
-      discountedPrice: 19.99,
+      id: "eco",
+      name: "Eco – Sustainable Smart Notebook",
+      description: "Eco-friendly and sustainable design for the conscious consumer.",
+      price: 29.99,
+      discountedPrice: 24.99,
       image: "/placeholder.svg?height=300&width=300",
-      status: "New Arrival",
-      rating: 4.8,
-      reviewCount: 124,
+      status: "Eco",
+      rating: 4.5,
+      reviewCount: 75,
     },
     {
-      id: "2",
-      name: "Pro – Professional Smart Notebook",
-      description: "Perfect for business professionals",
+      id: "lite",
+      name: "Lite – Lightweight Smart Notebook",
+      description: "Slim, lightweight design perfect for everyday note-taking.",
+      price: 19.99,
+      discountedPrice: 17.99,
+      image: "/placeholder.svg?height=300&width=300",
+      status: "Lite",
+      rating: 4.2,
+      reviewCount: 50,
+    },
+    {
+      id: "classic",
+      name: "Classic – Timeless Smart Notebook",
+      description: "Traditional design meets modern functionality in this classic notebook.",
       price: 34.99,
       discountedPrice: 29.99,
       image: "/placeholder.svg?height=300&width=300",
-      status: "Best Seller",
-      rating: 4.9,
-      reviewCount: 256,
-    },
-    {
-      id: "3",
-      name: "Mini – Pocket Smart Notebook",
-      description: "Compact and portable",
-      price: 19.99,
-      discountedPrice: 14.99,
-      image: "/placeholder.svg?height=300&width=300",
-      status: "Special Discount",
+      status: "Classic",
       rating: 4.7,
-      reviewCount: 98,
+      reviewCount: 120,
     },
     {
-      id: "4",
-      name: "Executive – Premium Smart Notebook",
-      description: "Luxury design with premium features",
+      id: "airprint",
+      name: "Air Print – AI-Powered Smart Notebook",
+      description:
+        "Innovative design featuring AI-powered functionalities and air printing capabilities.",
       price: 49.99,
       discountedPrice: 39.99,
       image: "/placeholder.svg?height=300&width=300",
-      status: "Limited Edition",
+      status: "Air Print",
       rating: 4.9,
-      reviewCount: 87,
+      reviewCount: 200,
     },
-  ]
+  ];
 
   // Mock testimonials
   const testimonials = [
@@ -86,7 +125,7 @@ export default function HomePage() {
       rating: 4,
       avatar: "/placeholder.svg?height=64&width=64",
     },
-  ]
+  ];
 
   return (
     <main>
@@ -116,10 +155,7 @@ export default function HomePage() {
               <div className="flex items-center mt-8">
                 <div className="flex -space-x-2 mr-4">
                   {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="h-10 w-10 rounded-full border-2 border-white overflow-hidden"
-                    >
+                    <div key={i} className="h-10 w-10 rounded-full border-2 border-white overflow-hidden">
                       <Image
                         src={`/placeholder.svg?height=40&width=40&text=${i}`}
                         alt={`Customer ${i}`}
@@ -168,21 +204,42 @@ export default function HomePage() {
             <TabsContent value="bestsellers" className="mt-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {featuredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <div key={product.id} className="flex flex-col gap-2">
+                    <Link legacyBehavior href={`/products/${product.id}`}>
+                      <a suppressHydrationWarning>
+                        <ProductCard product={product} />
+                      </a>
+                    </Link>
+                    <Button onClick={() => handleAddToCart(product)}>Add to Cart</Button>
+                  </div>
                 ))}
               </div>
             </TabsContent>
             <TabsContent value="new" className="mt-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {featuredProducts.slice(0, 3).map((product) => (
-                  <ProductCard key={product.id} product={{ ...product, status: "New Arrival" }} />
+                  <div key={product.id} className="flex flex-col gap-2">
+                    <Link legacyBehavior href={`/products/${product.id}`}>
+                      <a suppressHydrationWarning>
+                        <ProductCard product={{ ...product, status: "New Arrival" }} />
+                      </a>
+                    </Link>
+                    <Button onClick={() => handleAddToCart(product)}>Add to Cart</Button>
+                  </div>
                 ))}
               </div>
             </TabsContent>
             <TabsContent value="sale" className="mt-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {featuredProducts.slice(1, 4).map((product) => (
-                  <ProductCard key={product.id} product={{ ...product, status: "Sale" }} />
+                  <div key={product.id} className="flex flex-col gap-2">
+                    <Link legacyBehavior href={`/products/${product.id}`}>
+                      <a suppressHydrationWarning>
+                        <ProductCard product={{ ...product, status: "Sale" }} />
+                      </a>
+                    </Link>
+                    <Button onClick={() => handleAddToCart(product)}>Add to Cart</Button>
+                  </div>
                 ))}
               </div>
             </TabsContent>
@@ -489,47 +546,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Trust Badges */}
-      <section className="py-12 border-t">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
-            <div className="flex items-center">
-              <Truck className="h-6 w-6 text-muted-foreground mr-2" />
-              <span className="text-sm font-medium">Free Shipping</span>
-            </div>
-            <div className="flex items-center">
-              <RefreshCw className="h-6 w-6 text-muted-foreground mr-2" />
-              <span className="text-sm font-medium">30-Day Returns</span>
-            </div>
-            <div className="flex items-center">
-              <Shield className="h-6 w-6 text-muted-foreground mr-2" />
-              <span className="text-sm font-medium">Secure Checkout</span>
-            </div>
-            <div className="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-6 w-6 text-muted-foreground mr-2"
-              >
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-                <path d="M12 8v4" />
-                <path d="M12 16h.01" />
-              </svg>
-              <span className="text-sm font-medium">2-Year Warranty</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Subscription Popup Component */}
       <SubscriptionPopup />
     </main>
-  )
+  );
 }

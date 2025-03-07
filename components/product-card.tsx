@@ -1,30 +1,34 @@
-import Link from "next/link"
-import Image from "next/image"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Heart, Star } from "lucide-react"
-import AddToCartButton from "@/components/add-to-cart-button"
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Heart, Star } from "lucide-react";
+import AddToCartButton from "@/components/add-to-cart-button";
 
 // Define a TypeScript interface for the product object
 interface Product {
-  id: string | number
-  image?: string
-  name: string
-  status?: string
-  description: string
-  rating: number
-  reviewCount: number
-  discountedPrice: number
-  price: number
+  id: string | number;
+  image?: string;
+  name: string;
+  status?: string;
+  description: string;
+  rating: number;
+  reviewCount: number;
+  discountedPrice: number;
+  price: number;
 }
 
-// Define the props type for the component
+// Update the props type to include an optional onCustomize callback.
 interface ProductCardProps {
-  product: Product
+  product: Product;
+  onAddToCart?: () => void;
+  onCustomize?: () => void;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, onAddToCart, onCustomize }: ProductCardProps) {
   return (
     <Card className="overflow-hidden group">
       <div className="relative">
@@ -39,9 +43,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             />
           </div>
         </Link>
-
-        {product.status && <Badge className="absolute top-2 left-2">{product.status}</Badge>}
-
+        {product.status && (
+          <Badge className="absolute top-2 left-2">{product.status}</Badge>
+        )}
         <Button
           variant="ghost"
           size="icon"
@@ -58,9 +62,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             {product.name}
           </h3>
         </Link>
-
-        <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{product.description}</p>
-
+        <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+          {product.description}
+        </p>
         <div className="flex items-center gap-1 mb-2">
           {Array(5)
             .fill(0)
@@ -68,30 +72,55 @@ export default function ProductCard({ product }: ProductCardProps) {
               <Star
                 key={i}
                 className={`h-4 w-4 ${
-                  i < Math.floor(product.rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+                  i < Math.floor(product.rating)
+                    ? "text-yellow-400 fill-yellow-400"
+                    : "text-gray-300"
                 }`}
               />
             ))}
-          <span className="text-xs text-muted-foreground ml-1">({product.reviewCount})</span>
+          <span className="text-xs text-muted-foreground ml-1">
+            ({product.reviewCount})
+          </span>
         </div>
-
         <div className="flex items-center">
           {product.discountedPrice < product.price ? (
             <>
-              <span className="font-bold text-lg">${product.discountedPrice.toFixed(2)}</span>
+              <span className="font-bold text-lg">
+                ${product.discountedPrice.toFixed(2)}
+              </span>
               <span className="text-sm text-muted-foreground line-through ml-2">
                 ${product.price.toFixed(2)}
               </span>
             </>
           ) : (
-            <span className="font-bold text-lg">${product.price.toFixed(2)}</span>
+            <span className="font-bold text-lg">
+              ${product.price.toFixed(2)}
+            </span>
           )}
         </div>
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <AddToCartButton product={product} />
+        {onAddToCart ? (
+          <>
+            <Button onClick={onAddToCart}>Add to Cart</Button>
+            {onCustomize && (
+              <Button variant="outline" onClick={onCustomize} className="ml-2">
+                Customize
+              </Button>
+            )}
+          </>
+        ) : (
+          <>
+            <AddToCartButton product={product} />
+            {onCustomize && (
+              <Button variant="outline" onClick={onCustomize} className="ml-2">
+                Customize
+              </Button>
+            )}
+          </>
+        )}
       </CardFooter>
     </Card>
-  )
+  );
 }

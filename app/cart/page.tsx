@@ -1,55 +1,34 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import { ShoppingCart, Trash2, ArrowRight, CreditCard } from "lucide-react"
-import CartItem from "@/components/cart-item"
+"use client";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { ShoppingCart, Trash2, ArrowRight, CreditCard } from "lucide-react";
+import CartItem from "@/components/cart-item";
+import { useCart } from "@/context/cart-context";
 
 export default function CartPage() {
-  // This would be fetched from your cart context in a real app
-  const cartItems = [
-    {
-      id: "1",
-      name: "Air – AI-Powered Smart Reusable Notebook",
-      price: 19.99,
-      quantity: 1,
-      image: "/placeholder.svg?height=80&width=80",
-      customization: {
-        coverColor: "Black",
-        pageLayout: "Dotted",
-        paperType: "Premium",
-        bindingType: "Spiral",
-      },
-    },
-    {
-      id: "2",
-      name: "Pro – Professional Smart Notebook",
-      price: 29.99,
-      quantity: 2,
-      image: "/placeholder.svg?height=80&width=80",
-      customization: {
-        coverColor: "Navy",
-        pageLayout: "Grid",
-        paperType: "Waterproof",
-        bindingType: "Hardcover",
-      },
-    },
-  ]
+  const { cart, clearCart } = useCart();
 
-  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
-  const shipping = subtotal > 50 ? 0 : 4.99
-  const tax = subtotal * 0.08 // 8% tax rate
-  const total = subtotal + shipping + tax
+  const subtotal = cart.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+  const shipping = subtotal > 50 ? 0 : 4.99;
+  const tax = subtotal * 0.08; // 8% tax rate
+  const total = subtotal + shipping + tax;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
 
-      {cartItems.length === 0 ? (
+      {cart.length === 0 ? (
         <div className="text-center py-12">
           <ShoppingCart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h2 className="text-2xl font-medium mb-2">Your cart is empty</h2>
-          <p className="text-muted-foreground mb-8">Looks like you haven't added any products to your cart yet.</p>
+          <p className="text-muted-foreground mb-8">
+            Looks like you haven't added any products to your cart yet.
+          </p>
           <Button size="lg" asChild>
             <Link href="/products">Start Shopping</Link>
           </Button>
@@ -76,7 +55,7 @@ export default function CartPage() {
               </div>
 
               <div className="divide-y">
-                {cartItems.map((item) => (
+                {cart.map((item) => (
                   <CartItem key={item.id} item={item} />
                 ))}
               </div>
@@ -86,7 +65,11 @@ export default function CartPage() {
               <Button variant="outline" asChild>
                 <Link href="/products">Continue Shopping</Link>
               </Button>
-              <Button variant="outline" className="text-destructive hover:text-destructive">
+              <Button
+                variant="outline"
+                className="text-destructive hover:text-destructive"
+                onClick={clearCart}
+              >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Clear Cart
               </Button>
@@ -104,7 +87,9 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
-                  <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                  <span>
+                    {shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tax</span>
@@ -132,7 +117,9 @@ export default function CartPage() {
                   </Link>
                 </Button>
 
-                <p className="text-xs text-center text-muted-foreground">Secure checkout powered by Razorpay</p>
+                <p className="text-xs text-center text-muted-foreground">
+                  Secure checkout powered by Razorpay
+                </p>
 
                 <div className="flex justify-center">
                   <CreditCard className="h-5 w-5 text-muted-foreground" />
@@ -143,6 +130,5 @@ export default function CartPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
-
