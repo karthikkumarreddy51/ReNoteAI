@@ -1,42 +1,46 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Trash2, Pencil } from "lucide-react"
-import { useCart } from "@/context/cart-context"
+import React, { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Trash2, Pencil } from "lucide-react";
+import { useCart, CartItem as CartItemType } from "@/context/cart-context";
 
-export default function CartItem({ item }) {
-  const { updateQuantity, removeFromCart } = useCart()
-  const [quantity, setQuantity] = useState(item.quantity)
+interface CartItemProps {
+  item: CartItemType;
+}
 
-  const handleQuantityChange = (e) => {
-    const newQuantity = Number.parseInt(e.target.value)
+export default function CartItem({ item }: CartItemProps) {
+  const { updateQuantity, removeFromCart } = useCart();
+  const [quantity, setQuantity] = useState<number>(item.quantity);
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newQuantity = Number.parseInt(e.target.value);
     if (newQuantity > 0) {
-      setQuantity(newQuantity)
-      updateQuantity(item.id, newQuantity)
+      setQuantity(newQuantity);
+      updateQuantity(item.id, newQuantity);
     }
-  }
+  };
 
   const incrementQuantity = () => {
-    const newQuantity = quantity + 1
-    setQuantity(newQuantity)
-    updateQuantity(item.id, newQuantity)
-  }
+    const newQuantity = quantity + 1;
+    setQuantity(newQuantity);
+    updateQuantity(item.id, newQuantity);
+  };
 
   const decrementQuantity = () => {
     if (quantity > 1) {
-      const newQuantity = quantity - 1
-      setQuantity(newQuantity)
-      updateQuantity(item.id, newQuantity)
+      const newQuantity = quantity - 1;
+      setQuantity(newQuantity);
+      updateQuantity(item.id, newQuantity);
     }
-  }
+  };
 
   const handleRemove = () => {
-    removeFromCart(item.id)
-  }
+    removeFromCart(item.id);
+  };
 
   return (
     <div className="p-4">
@@ -109,6 +113,5 @@ export default function CartItem({ item }) {
         </Button>
       </div>
     </div>
-  )
+  );
 }
-

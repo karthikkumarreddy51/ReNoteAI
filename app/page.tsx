@@ -5,10 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, ArrowRight, Star, RefreshCw, Shield } from "lucide-react";
-import ProductCard from "@/components/product-card";
 import SubscriptionPopup from "@/components/subscription-popup";
-import { useCart } from "@/context/cart-context";
-import { useRouter } from "next/navigation";
 
 // Define your Product interface
 interface Product {
@@ -30,23 +27,6 @@ interface Product {
 }
 
 export default function HomePage() {
-  const { addToCart } = useCart();
-  const router = useRouter();
-
-  // Annotate the product parameter with the Product type
-  const handleAddToCart = (product: Product) => {
-    const priceToUse =
-      product.discountedPrice < product.price ? product.discountedPrice : product.price;
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: priceToUse,
-      quantity: 1,
-      image: product.image,
-    });
-    router.push("/cart");
-  };
-
   // Updated featured products array in desired order/labels.
   const featuredProducts: Product[] = [
     {
@@ -103,7 +83,7 @@ export default function HomePage() {
       name: "Sarah Johnson",
       role: "Marketing Director",
       content:
-        "I've been using the Smart Notebook for 6 months now and it has completely transformed how I take notes in meetings. The ability to digitize my handwritten notes instantly is a game-changer!",
+        "I've been using for 6 months now and it has completely transformed how I take notes in meetings. The ability to digitize my handwritten notes instantly is a game-changer!",
       rating: 5,
       avatar: "/placeholder.svg?height=64&width=64",
     },
@@ -126,6 +106,52 @@ export default function HomePage() {
       avatar: "/placeholder.svg?height=64&width=64",
     },
   ];
+
+  // Inline product rendering function without using the ProductCard component.
+  const renderProduct = (product: Product) => (
+    <div key={product.id} className="border p-4 rounded-md hover:shadow-lg transition">
+      <Link href={`/products/${product.id}`} className="block">
+        <div className="relative w-full h-48">
+          <Image
+            src={product.image || "/placeholder.svg?height=300&width=300"}
+            alt={product.name}
+            fill
+            className="rounded-md object-cover"
+          />
+          {product.status && (
+            <span className="absolute top-2 left-2 bg-primary text-white px-2 py-1 text-xs rounded">
+              {product.status}
+            </span>
+          )}
+        </div>
+        <h3 className="mt-4 text-lg font-bold">{product.name}</h3>
+        <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{product.description}</p>
+        <div className="mt-2 flex items-center">
+          {Array(5)
+            .fill(0)
+            .map((_, i) => (
+              <Star
+                key={i}
+                className={`h-4 w-4 ${i < Math.floor(product.rating) ? "text-yellow-400" : "text-gray-300"}`}
+              />
+            ))}
+          <span className="text-xs text-muted-foreground ml-1">({product.reviewCount})</span>
+        </div>
+        <div className="mt-2">
+          {product.discountedPrice < product.price ? (
+            <>
+              <span className="font-bold text-lg">${product.discountedPrice.toFixed(2)}</span>
+              <span className="text-sm text-muted-foreground line-through ml-2">
+                ${product.price.toFixed(2)}
+              </span>
+            </>
+          ) : (
+            <span className="font-bold text-lg">${product.price.toFixed(2)}</span>
+          )}
+        </div>
+      </Link>
+    </div>
+  );
 
   return (
     <main>
@@ -203,42 +229,21 @@ export default function HomePage() {
             </TabsList>
             <TabsContent value="bestsellers" className="mt-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {featuredProducts.map((product) => (
-                  <div key={product.id} className="flex flex-col gap-2">
-                    {/* Removed the extra Add to Cart button here */}
-                    <Link legacyBehavior href={`/products/${product.id}`}>
-                      <a suppressHydrationWarning>
-                        <ProductCard product={product} />
-                      </a>
-                    </Link>
-                  </div>
-                ))}
+                {featuredProducts.map((product) => renderProduct(product))}
               </div>
             </TabsContent>
             <TabsContent value="new" className="mt-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {featuredProducts.slice(0, 3).map((product) => (
-                  <div key={product.id} className="flex flex-col gap-2">
-                    <Link legacyBehavior href={`/products/${product.id}`}>
-                      <a suppressHydrationWarning>
-                        <ProductCard product={{ ...product, status: "New Arrival" }} />
-                      </a>
-                    </Link>
-                  </div>
-                ))}
+                {featuredProducts.slice(0, 3).map((product) =>
+                  renderProduct({ ...product, status: "New Arrival" })
+                )}
               </div>
             </TabsContent>
             <TabsContent value="sale" className="mt-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {featuredProducts.slice(1, 4).map((product) => (
-                  <div key={product.id} className="flex flex-col gap-2">
-                    <Link legacyBehavior href={`/products/${product.id}`}>
-                      <a suppressHydrationWarning>
-                        <ProductCard product={{ ...product, status: "Sale" }} />
-                      </a>
-                    </Link>
-                  </div>
-                ))}
+                {featuredProducts.slice(1, 4).map((product) =>
+                  renderProduct({ ...product, status: "Sale" })
+                )}
               </div>
             </TabsContent>
           </Tabs>
@@ -459,9 +464,7 @@ export default function HomePage() {
                   <span>1% of profits donated to environmental causes</span>
                 </li>
               </ul>
-              <Button asChild>
-                <Link href="/about">Learn More About Us</Link>
-              </Button>
+             
             </div>
             <div className="relative">
               <Image
@@ -537,9 +540,7 @@ export default function HomePage() {
             <Button size="lg" variant="secondary" asChild>
               <Link href="/products">Shop Now</Link>
             </Button>
-            <Button size="lg" variant="outline" className="bg-transparent" asChild>
-              <Link href="/contact">Contact Us</Link>
-            </Button>
+            
           </div>
         </div>
       </section>

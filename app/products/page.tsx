@@ -144,7 +144,7 @@ export default function ProductsPage() {
       {/* Header and view/sort controls */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Smart Notebooks</h1>
+          <h1 className="text-3xl font-bold mb-2">ReNote AI</h1>
           <p className="text-muted-foreground">
             Discover our range of innovative, reusable smart notebooks with customizable options.
           </p>

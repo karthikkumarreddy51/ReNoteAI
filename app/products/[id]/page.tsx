@@ -1,4 +1,5 @@
 "use client";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -104,7 +105,7 @@ interface ProductDetailPageProps {
 
 export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { id } = params;
-  // Find the product by matching id in a case-insensitive manner.
+  // Find the product in a case-insensitive manner.
   const product = products.find((p) => p.id.toLowerCase() === id.toLowerCase());
   const { addToCart } = useCart();
   const router = useRouter();
@@ -113,8 +114,39 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     return <div className="container mx-auto p-8">Product not found.</div>;
   }
 
+  // State to control whether to show the customization modal.
+  const [showCustomizationModal, setShowCustomizationModal] = useState(false);
+  // Initialize the selected customization with the first available option for each field.
+  const [selectedCustomization, setSelectedCustomization] = useState(() => ({
+    coverDesign: product.customizations?.coverDesign[0] || "",
+    pageLayout: product.customizations?.pageLayout[0] || "",
+    paperType: product.customizations?.paperType[0] || "",
+    bindingType: product.customizations?.bindingType[0] || "",
+  }));
+
+  const handleCustomizationChange = (field: keyof typeof selectedCustomization, value: string) => {
+    setSelectedCustomization((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // When the Add to Cart button is clicked, if the product has customization options, open the modal.
   const handleAddToCart = () => {
-    // Choose the discounted price if it is lower than the original price.
+    if (product.customizations) {
+      setShowCustomizationModal(true);
+    } else {
+      const priceToUse = product.discountedPrice < product.price ? product.discountedPrice : product.price;
+      addToCart({
+        id: product.id,
+        name: product.name,
+        price: priceToUse,
+        quantity: 1,
+        image: product.image,
+      });
+      router.push("/cart");
+    }
+  };
+
+  // Confirm the customization selection and add the product to the cart.
+  const confirmAddToCart = () => {
     const priceToUse = product.discountedPrice < product.price ? product.discountedPrice : product.price;
     addToCart({
       id: product.id,
@@ -122,8 +154,11 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       price: priceToUse,
       quantity: 1,
       image: product.image,
+      // If your CartItem type expects the key "customization" instead of "customizations",
+      // then use "customization" here.
+      customization: selectedCustomization,
     });
-    // Navigate to the cart page after adding the item.
+    setShowCustomizationModal(false);
     router.push("/cart");
   };
 
@@ -190,6 +225,85 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           <Button onClick={handleAddToCart}>Add to Cart</Button>
         </div>
       </div>
+
+      {/* Customization Modal */}
+      {showCustomizationModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-md w-11/12 md:w-1/2">
+            <h2 className="text-xl font-bold mb-4">Customize Your Notebook</h2>
+            {product.customizations?.coverDesign && (
+              <div className="mb-4">
+                <label className="block mb-1">Cover Design:</label>
+                <select
+                  value={selectedCustomization.coverDesign}
+                  onChange={(e) => handleCustomizationChange("coverDesign", e.target.value)}
+                  className="border p-2 rounded w-full"
+                >
+                  {product.customizations.coverDesign.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {product.customizations?.pageLayout && (
+              <div className="mb-4">
+                <label className="block mb-1">Page Layout:</label>
+                <select
+                  value={selectedCustomization.pageLayout}
+                  onChange={(e) => handleCustomizationChange("pageLayout", e.target.value)}
+                  className="border p-2 rounded w-full"
+                >
+                  {product.customizations.pageLayout.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {product.customizations?.paperType && (
+              <div className="mb-4">
+                <label className="block mb-1">Paper Type:</label>
+                <select
+                  value={selectedCustomization.paperType}
+                  onChange={(e) => handleCustomizationChange("paperType", e.target.value)}
+                  className="border p-2 rounded w-full"
+                >
+                  {product.customizations.paperType.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {product.customizations?.bindingType && (
+              <div className="mb-4">
+                <label className="block mb-1">Binding Type:</label>
+                <select
+                  value={selectedCustomization.bindingType}
+                  onChange={(e) => handleCustomizationChange("bindingType", e.target.value)}
+                  className="border p-2 rounded w-full"
+                >
+                  {product.customizations.bindingType.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="flex justify-end space-x-4 mt-6">
+              <Button variant="ghost" onClick={() => setShowCustomizationModal(false)}>
+                Cancel
+              </Button>
+              <Button onClick={confirmAddToCart}>Confirm</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
