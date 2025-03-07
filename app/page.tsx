@@ -205,12 +205,12 @@ export default function HomePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {featuredProducts.map((product) => (
                   <div key={product.id} className="flex flex-col gap-2">
+                    {/* Removed the extra Add to Cart button here */}
                     <Link legacyBehavior href={`/products/${product.id}`}>
                       <a suppressHydrationWarning>
                         <ProductCard product={product} />
                       </a>
                     </Link>
-                    <Button onClick={() => handleAddToCart(product)}>Add to Cart</Button>
                   </div>
                 ))}
               </div>
@@ -224,7 +224,6 @@ export default function HomePage() {
                         <ProductCard product={{ ...product, status: "New Arrival" }} />
                       </a>
                     </Link>
-                    <Button onClick={() => handleAddToCart(product)}>Add to Cart</Button>
                   </div>
                 ))}
               </div>
@@ -238,7 +237,6 @@ export default function HomePage() {
                         <ProductCard product={{ ...product, status: "Sale" }} />
                       </a>
                     </Link>
-                    <Button onClick={() => handleAddToCart(product)}>Add to Cart</Button>
                   </div>
                 ))}
               </div>
