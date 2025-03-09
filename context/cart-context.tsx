@@ -12,16 +12,20 @@ export type CartItem = {
 
 type CartContextType = {
   cart: CartItem[];
-  addToCart: (item: CartItem) => void;
-  removeFromCart: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  addItem: (item: CartItem) => void;
+  removeItem: (id: string) => void;
+  updateItemQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
+  addToCart: (item: CartItem) => void;
+  recentlyAddedItem: CartItem | null;
+  resetRecentlyAddedItem: () => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [recentlyAddedItem, setRecentlyAddedItem] = useState<CartItem | null>(null);
 
   // Load cart from localStorage on initial render
   useEffect(() => {
@@ -40,37 +44,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-  const addToCart = (item: CartItem) => {
+  const addItem = (item: CartItem) => {
     setCart((prevCart) => {
-      const existingItemIndex = prevCart.findIndex(
-        (cartItem) => cartItem.id === item.id
-      );
-      if (existingItemIndex >= 0) {
-        const updatedCart = [...prevCart];
-        updatedCart[existingItemIndex] = {
-          ...updatedCart[existingItemIndex],
-          quantity:
-            updatedCart[existingItemIndex].quantity + item.quantity,
-        };
-        return updatedCart;
+      const existingItem = prevCart.find((i) => i.id === item.id);
+      if (existingItem) {
+        return prevCart.map((i) =>
+          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+        );
       }
-      return [...prevCart, item];
+      return [...prevCart, { ...item, quantity: 1 }];
     });
+    setRecentlyAddedItem(item);
   };
 
-  const removeFromCart = (id: string) => {
+  const removeItem = (id: string) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== id));
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(id);
-      return;
-    }
+  const updateItemQuantity = (id: string, quantity: number) => {
     setCart((prevCart) =>
-      prevCart.map((item) =>
-        item.id === id ? { ...item, quantity } : item
-      )
+      prevCart
+        .map((item) =>
+          item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item
+        )
+        .filter((item) => item.quantity > 0)
     );
   };
 
@@ -78,9 +75,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setCart([]);
   };
 
+  const addToCart = (item: CartItem) => {
+    addItem(item);
+  };
+
+  const resetRecentlyAddedItem = () => {
+    setRecentlyAddedItem(null);
+  };
+
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}
+      value={{ cart, addItem, removeItem, updateItemQuantity, clearCart, addToCart, recentlyAddedItem, resetRecentlyAddedItem }}
     >
       {children}
     </CartContext.Provider>

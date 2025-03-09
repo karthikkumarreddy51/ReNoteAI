@@ -13,33 +13,35 @@ interface CartItemProps {
 }
 
 export default function CartItem({ item }: CartItemProps) {
-  const { updateQuantity, removeFromCart } = useCart();
+  const { updateItemQuantity, removeItem } = useCart();
   const [quantity, setQuantity] = useState<number>(item.quantity);
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuantity = Number.parseInt(e.target.value);
-    if (newQuantity > 0) {
+    if (newQuantity >= 0) {
       setQuantity(newQuantity);
-      updateQuantity(item.id, newQuantity);
+      updateItemQuantity(item.id, newQuantity);
     }
   };
 
   const incrementQuantity = () => {
     const newQuantity = quantity + 1;
     setQuantity(newQuantity);
-    updateQuantity(item.id, newQuantity);
+    updateItemQuantity(item.id, newQuantity);
   };
 
   const decrementQuantity = () => {
-    if (quantity > 1) {
-      const newQuantity = quantity - 1;
-      setQuantity(newQuantity);
-      updateQuantity(item.id, newQuantity);
+    const newQuantity = quantity - 1;
+    setQuantity(newQuantity);
+    if (newQuantity === 0) {
+      removeItem(item.id);
+    } else {
+      updateItemQuantity(item.id, newQuantity);
     }
   };
 
   const handleRemove = () => {
-    removeFromCart(item.id);
+    removeItem(item.id);
   };
 
   return (
@@ -81,7 +83,7 @@ export default function CartItem({ item }: CartItemProps) {
             </Button>
             <Input
               type="number"
-              min="1"
+              min="0"
               value={quantity}
               onChange={handleQuantityChange}
               className="h-8 w-12 rounded-none text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"

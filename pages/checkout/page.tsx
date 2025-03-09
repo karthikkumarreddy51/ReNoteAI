@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/router"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,6 +21,7 @@ export default function CheckoutPage() {
   const [shippingMethod, setShippingMethod] = useState("standard")
   const [isProcessing, setIsProcessing] = useState(false)
   const { cart, clearCart } = useCart()
+  const router = useRouter()
 
   // Calculate totals
   const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0)
@@ -27,7 +29,7 @@ export default function CheckoutPage() {
   const tax = subtotal * 0.08 // 8% tax rate
   const total = subtotal + shipping + tax
 
-  // Shipping rates from Shippo
+  // Shipping rates from Shiprocket
   const shippingRates = [
     { id: "standard", name: "Standard Shipping", price: 4.99, days: "3-5" },
     { id: "express", name: "Express Shipping", price: 9.99, days: "1-2" },
@@ -40,7 +42,7 @@ export default function CheckoutPage() {
     try {
       const order = await axios.post('/api/razorpay', { amount: total * 100, currency: 'INR' })
       const options = {
-        key: process.env.RAZORPAY_KEY_ID,
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: order.data.amount,
         currency: order.data.currency,
         name: 'ReNote AI',
@@ -113,6 +115,14 @@ export default function CheckoutPage() {
                     <Input id="phone" type="tel" required className="mt-1" />
                   </div>
                 </div>
+                <div className="mt-4">
+                  <div className="flex items-center">
+                    <Checkbox id="saveInfo" />
+                    <Label htmlFor="saveInfo" className="ml-2 text-sm font-normal">
+                      Email me with news and offers
+                    </Label>
+                  </div>
+                </div>
               </div>
 
               {/* Shipping Address */}
@@ -120,16 +130,20 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-medium mb-4">Shipping Address</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" required className="mt-1" />
+                    <Label htmlFor="firstName">First Name (optional)</Label>
+                    <Input id="firstName" className="mt-1" />
                   </div>
                   <div>
                     <Label htmlFor="lastName">Last Name</Label>
                     <Input id="lastName" required className="mt-1" />
                   </div>
                   <div className="md:col-span-2">
-                    <Label htmlFor="address">Street Address</Label>
+                    <Label htmlFor="address">Address</Label>
                     <Input id="address" required className="mt-1" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="apartment">Apartment, suite, etc. (optional)</Label>
+                    <Input id="apartment" className="mt-1" />
                   </div>
                   <div>
                     <Label htmlFor="city">City</Label>
@@ -137,32 +151,42 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <Label htmlFor="state">State / Province</Label>
-                    <Input id="state" required className="mt-1" />
+                    <Select defaultValue="Telangana">
+                      <SelectTrigger id="state" className="mt-1">
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Telangana">Telangana</SelectItem>
+                        {/* Add other states as needed */}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
-                    <Label htmlFor="zip">ZIP / Postal Code</Label>
+                    <Label htmlFor="zip">PIN code</Label>
                     <Input id="zip" required className="mt-1" />
                   </div>
                   <div>
                     <Label htmlFor="country">Country</Label>
-                    <Select defaultValue="us">
+                    <Select defaultValue="India">
                       <SelectTrigger id="country" className="mt-1">
                         <SelectValue placeholder="Select country" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="us">United States</SelectItem>
-                        <SelectItem value="ca">Canada</SelectItem>
-                        <SelectItem value="uk">United Kingdom</SelectItem>
-                        <SelectItem value="au">Australia</SelectItem>
+                        <SelectItem value="India">India</SelectItem>
+                        {/* Add other countries as needed */}
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input id="phone" required className="mt-1" />
                   </div>
                 </div>
                 <div className="mt-4">
                   <div className="flex items-center">
                     <Checkbox id="saveAddress" />
                     <Label htmlFor="saveAddress" className="ml-2 text-sm font-normal">
-                      Save this address for future orders
+                      Save this information for next time
                     </Label>
                   </div>
                 </div>
@@ -212,30 +236,10 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-medium mb-4">Payment Method</h2>
                 <Tabs defaultValue="razorpay" className="w-full">
                   <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="card">Credit Card</TabsTrigger>
                     <TabsTrigger value="razorpay">Razorpay</TabsTrigger>
+                    <TabsTrigger value="card">Credit Card</TabsTrigger>
                     <TabsTrigger value="paypal">PayPal</TabsTrigger>
                   </TabsList>
-                  <TabsContent value="card" className="mt-4 space-y-4">
-                    <div>
-                      <Label htmlFor="cardNumber">Card Number</Label>
-                      <Input id="cardNumber" placeholder="1234 5678 9012 3456" className="mt-1" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="expiry">Expiry Date</Label>
-                        <Input id="expiry" placeholder="MM/YY" className="mt-1" />
-                      </div>
-                      <div>
-                        <Label htmlFor="cvc">CVC</Label>
-                        <Input id="cvc" placeholder="123" className="mt-1" />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="nameOnCard">Name on Card</Label>
-                      <Input id="nameOnCard" className="mt-1" />
-                    </div>
-                  </TabsContent>
                   <TabsContent value="razorpay" className="mt-4">
                     <div className="text-center py-8">
                       <CreditCard className="h-12 w-12 mx-auto text-primary mb-4" />
@@ -255,6 +259,26 @@ export default function CheckoutPage() {
                           height={30}
                         />
                       </div>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="card" className="mt-4 space-y-4">
+                    <div>
+                      <Label htmlFor="cardNumber">Card Number</Label>
+                      <Input id="cardNumber" placeholder="1234 5678 9012 3456" className="mt-1" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="expiry">Expiry Date</Label>
+                        <Input id="expiry" placeholder="MM/YY" className="mt-1" />
+                      </div>
+                      <div>
+                        <Label htmlFor="cvc">CVC</Label>
+                        <Input id="cvc" placeholder="123" className="mt-1" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="nameOnCard">Name on Card</Label>
+                      <Input id="nameOnCard" className="mt-1" />
                     </div>
                   </TabsContent>
                   <TabsContent value="paypal" className="mt-4">
@@ -280,6 +304,14 @@ export default function CheckoutPage() {
                     <Checkbox id="sameAsShipping" defaultChecked />
                     <Label htmlFor="sameAsShipping" className="ml-2">
                       Same as shipping address
+                    </Label>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <div className="flex items-center">
+                    <Checkbox id="differentBilling" />
+                    <Label htmlFor="differentBilling" className="ml-2 text-sm font-normal">
+                      Use a different billing address
                     </Label>
                   </div>
                 </div>

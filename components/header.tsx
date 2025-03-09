@@ -17,16 +17,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Search, Menu, ShoppingCart, User, Heart, X } from "lucide-react"
+import { Search, Menu, ShoppingCart, User, Heart, X, CheckCircle, RefreshCw } from "lucide-react"
 import { searchProducts } from "@/lib/search"
 
 export default function Header() {
   const pathname = usePathname()
   const router = useRouter()
-  const { cart } = useCart()
+  const { cart, addItem, removeItem, updateItemQuantity, recentlyAddedItem, resetRecentlyAddedItem, refreshCart } = useCart()
   const { searchQuery, setSearchQuery, searchResults, setSearchResults, isSearching, setIsSearching } = useSearch()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
+  const [isCartOpen, setIsCartOpen] = useState(false)
 
   // Track scroll position for header styling
   useEffect(() => {
@@ -48,27 +49,6 @@ export default function Header() {
     { name: "Contact", href: "/#contact" },
   ]
 
-  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
-    if (!searchQuery.trim()) return
-
-    setIsSearching(true)
-
-    try {
-      // Search for products
-      const results = await searchProducts(searchQuery)
-      setSearchResults(results)
-
-      // Navigate to search results page
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
-    } catch (error) {
-      console.error("Search error:", error)
-    } finally {
-      setIsSearching(false)
-    }
-  }
-
   const handleNavLinkClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
     href: string
@@ -83,6 +63,21 @@ export default function Header() {
         targetElement.scrollIntoView({ behavior: "smooth" })
       }
     }
+  }
+
+  const handleViewCart = () => {
+    setIsCartOpen(false)
+    router.push("/cart")
+  }
+
+  const handleCheckout = () => {
+    setIsCartOpen(false)
+    router.push("/checkout")
+  }
+
+  const handleShopNow = () => {
+    setIsCartOpen(false)
+    router.push("/products")
   }
 
   return (
@@ -168,20 +163,6 @@ export default function Header() {
 
           {/* Actions */}
           <div className="flex items-center space-x-2">
-            {/* Desktop Search */}
-            <form onSubmit={handleSearch} className="hidden md:flex items-center relative">
-              <Input
-                type="search"
-                placeholder="Search products..."
-                className="w-[200px] lg:w-[300px]"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <Button type="submit" variant="ghost" size="icon" className="absolute right-0">
-                <Search className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </form>
-
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -231,7 +212,7 @@ export default function Header() {
             </Button>
 
             {/* Cart */}
-            <Sheet>
+            <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
                   <ShoppingCart className="h-5 w-5" />
@@ -252,8 +233,8 @@ export default function Header() {
                   <div className="flex flex-col items-center justify-center h-full">
                     <ShoppingCart className="h-16 w-16 text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">Your cart is empty</p>
-                    <Button className="mt-4" asChild>
-                      <Link href="/products">Shop Now</Link>
+                    <Button className="mt-4" onClick={handleShopNow}>
+                      Shop Now
                     </Button>
                   </div>
                 ) : (
@@ -276,6 +257,39 @@ export default function Header() {
                               <p className="text-sm text-muted-foreground">
                                 Qty: {item.quantity} × ${item.price.toFixed(2)}
                               </p>
+                              <div className="flex items-center space-x-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    updateItemQuantity(item.id, item.quantity - 1)
+                                    setIsCartOpen(false)
+                                  }}
+                                >
+                                  -
+                                </Button>
+                                <span>{item.quantity}</span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    updateItemQuantity(item.id, item.quantity + 1)
+                                    setIsCartOpen(false)
+                                  }}
+                                >
+                                  +
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    removeItem(item.id)
+                                    setIsCartOpen(false)
+                                  }}
+                                >
+                                  Remove
+                                </Button>
+                              </div>
                             </div>
                             <p className="text-sm font-medium">${(item.price * item.quantity).toFixed(2)}</p>
                           </li>
@@ -292,18 +306,20 @@ export default function Header() {
                       </div>
                       <p className="text-sm text-muted-foreground mb-4">Shipping and taxes calculated at checkout</p>
                       <div className="grid gap-2">
-                        <Button asChild>
-                          <Link href="/cart">View Cart</Link>
-                        </Button>
-                        <Button variant="outline" asChild>
-                          <Link href="/checkout">Checkout</Link>
-                        </Button>
+                        <Button onClick={handleViewCart}>View Cart</Button>
+                        <Button variant="outline" onClick={handleCheckout}>Checkout</Button>
                       </div>
                     </div>
                   </div>
                 )}
               </SheetContent>
             </Sheet>
+
+            {/* Refresh Cart */}
+            <Button variant="ghost" size="icon" onClick={refreshCart}>
+              <RefreshCw className="h-5 w-5" />
+              <span className="sr-only">Refresh Cart</span>
+            </Button>
           </div>
         </div>
 
@@ -325,6 +341,19 @@ export default function Header() {
           </div>
         )}
       </div>
+
+      {/* Recently Added Item Notification */}
+      {recentlyAddedItem && (
+        <div className="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-4 flex items-center space-x-4">
+          <CheckCircle className="text-green-500 h-6 w-6" />
+          <div>
+            <p className="font-medium">{recentlyAddedItem.name} added to cart</p>
+            <Button variant="link" size="sm" onClick={resetRecentlyAddedItem}>
+              Dismiss
+            </Button>
+          </div>
+        </div>
+      )}
     </header>
   )
 }
