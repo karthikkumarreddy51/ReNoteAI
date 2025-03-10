@@ -1,90 +1,59 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, ArrowRight, Star, RefreshCw, Shield } from "lucide-react";
+import {
+  Button,
+  Card,
+  CardContent,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui";
+import { ArrowRight, Check } from "lucide-react";
 import SubscriptionPopup from "@/components/subscription-popup";
 
-// Define your Product interface
+// Import images from your local folder
+import AirImg from "../images/Air.png";
+import ClassicImg from "../images/classic.png";
+import EcoImg from "../images/eco.png";
+import BookWithAppImg from "../images/Book With App.png";
+import HTU1 from "../images/htu1.png";
+import HTU2 from "../images/htu2.png";
+import HTU3 from "../images/htu3.png";
+import HTU4 from "../images/htu4.jpg";
+
 interface Product {
   id: string;
   image?: string;
   name: string;
-  status?: string;
-  description: string;
-  rating: number;
-  reviewCount: number;
   discountedPrice: number;
   price: number;
-  customizations?: {
-    coverDesign: string[];
-    pageLayout: string[];
-    paperType: string[];
-    bindingType: string[];
-  };
+  status?: string;
+}
+
+interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  content: string;
+  avatar: string;
 }
 
 export default function HomePage() {
-  // Updated featured products array in desired order/labels.
   const featuredProducts: Product[] = [
-    {
-      id: "eco",
-      name: "Eco – Sustainable Smart Notebook",
-      description: "Eco-friendly and sustainable design for the conscious consumer.",
-      price: 29.99,
-      discountedPrice: 24.99,
-      image: "/placeholder.svg?height=300&width=300",
-      status: "Eco",
-      rating: 4.5,
-      reviewCount: 75,
-    },
-    {
-      id: "lite",
-      name: "Lite – Lightweight Smart Notebook",
-      description: "Slim, lightweight design perfect for everyday note-taking.",
-      price: 19.99,
-      discountedPrice: 17.99,
-      image: "/placeholder.svg?height=300&width=300",
-      status: "Lite",
-      rating: 4.2,
-      reviewCount: 50,
-    },
-    {
-      id: "classic",
-      name: "Classic – Timeless Smart Notebook",
-      description: "Traditional design meets modern functionality in this classic notebook.",
-      price: 34.99,
-      discountedPrice: 29.99,
-      image: "/placeholder.svg?height=300&width=300",
-      status: "Classic",
-      rating: 4.7,
-      reviewCount: 120,
-    },
-    {
-      id: "airprint",
-      name: "Air Print – AI-Powered Smart Notebook",
-      description:
-        "Innovative design featuring AI-powered functionalities and air printing capabilities.",
-      price: 49.99,
-      discountedPrice: 39.99,
-      image: "/placeholder.svg?height=300&width=300",
-      status: "Air Print",
-      rating: 4.9,
-      reviewCount: 200,
-    },
+    { id: "air", name: "Air", image: AirImg.src, price: 2499, discountedPrice: 999 },
+    { id: "classic", name: "Renoteclassic", image: ClassicImg.src, price: 2499, discountedPrice: 999 },
+    { id: "eco", name: "Eco", image: EcoImg.src, price: 999, discountedPrice: 499 },
   ];
 
-  // Mock testimonials
-  const testimonials = [
+  const testimonials: Testimonial[] = [
     {
       id: "1",
       name: "Sarah Johnson",
       role: "Marketing Director",
       content:
         "I've been using for 6 months now and it has completely transformed how I take notes in meetings. The ability to digitize my handwritten notes instantly is a game-changer!",
-      rating: 5,
       avatar: "/placeholder.svg?height=64&width=64",
     },
     {
@@ -93,7 +62,6 @@ export default function HomePage() {
       role: "Software Engineer",
       content:
         "As a developer, I was skeptical about using a notebook instead of typing, but the Smart Notebook has won me over. The OCR technology is incredibly accurate, and I love having my diagrams and code snippets digitized.",
-      rating: 5,
       avatar: "/placeholder.svg?height=64&width=64",
     },
     {
@@ -102,112 +70,102 @@ export default function HomePage() {
       role: "Student",
       content:
         "This notebook has been a lifesaver for my studies. I can take notes in class and have them organized digitally without having to type everything up later. Highly recommend for students!",
-      rating: 4,
       avatar: "/placeholder.svg?height=64&width=64",
     },
   ];
 
-  // Inline product rendering function without using the ProductCard component.
-  const renderProduct = (product: Product) => (
-    <div key={product.id} className="border p-4 rounded-md hover:shadow-lg transition">
-      <Link href={`/products/${product.id}`} className="block">
-        <div className="relative w-full h-48">
-          <Image
-            src={product.image || "/placeholder.svg?height=300&width=300"}
-            alt={product.name}
-            fill
-            className="rounded-md object-cover"
-          />
-          {product.status && (
-            <span className="absolute top-2 left-2 bg-primary text-white px-2 py-1 text-xs rounded">
-              {product.status}
-            </span>
-          )}
-        </div>
-        <h3 className="mt-4 text-lg font-bold">{product.name}</h3>
-        <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{product.description}</p>
-        <div className="mt-2 flex items-center">
-          {Array(5)
-            .fill(0)
-            .map((_, i) => (
-              <Star
-                key={i}
-                className={`h-4 w-4 ${i < Math.floor(product.rating) ? "text-yellow-400" : "text-gray-300"}`}
-              />
-            ))}
-          <span className="text-xs text-muted-foreground ml-1">({product.reviewCount})</span>
-        </div>
-        <div className="mt-2">
-          {product.discountedPrice < product.price ? (
-            <>
-              <span className="font-bold text-lg">${product.discountedPrice.toFixed(2)}</span>
-              <span className="text-sm text-muted-foreground line-through ml-2">
-                ${product.price.toFixed(2)}
-              </span>
-            </>
+  // Renders a single featured product card
+  const renderProduct = (product: Product) => {
+    return (
+      <Link
+        href={`/products/${product.id}`}
+        key={product.id}
+        className="border p-4 rounded-md hover:shadow-lg transition"
+      >
+        {/* Image Section */}
+        <div className="relative w-full h-80 overflow-hidden">
+          {product.id === "air" || product.id === "eco" ? (
+            <div
+              className="w-full h-full rounded-md transition-transform duration-500 hover:scale-105"
+              style={{
+                backgroundImage: `url(${product.image})`,
+                backgroundSize: "contain",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }}
+            />
           ) : (
-            <span className="font-bold text-lg">${product.price.toFixed(2)}</span>
+            <Image
+              src={product.image || "/placeholder.svg?height=300&width=300"}
+              alt={product.name}
+              fill
+              loading="eager"
+              className="object-contain rounded-md transition-transform duration-500 hover:scale-105"
+            />
           )}
+        </div>
+
+        {/* Text Section */}
+        <div className="mt-4 text-center">
+          <h3 className="text-lg font-bold">{product.name}</h3>
+          <div className="mt-2">
+            {product.discountedPrice < product.price ? (
+              <>
+                <span className="font-bold text-lg">
+                  Rs.{product.discountedPrice.toFixed(2)}
+                </span>
+                <span className="text-sm text-muted-foreground line-through ml-2">
+                  Rs.{product.price.toFixed(2)}
+                </span>
+              </>
+            ) : (
+              <span className="font-bold text-lg">
+                Rs.{product.price.toFixed(2)}
+              </span>
+            )}
+          </div>
         </div>
       </Link>
-    </div>
-  );
+    );
+  };
 
   return (
     <main>
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-primary/10 to-primary/5 py-20">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                The Smart Notebook That Adapts to Your Needs
-              </h1>
-              <p className="text-xl text-muted-foreground mb-8">
-                Write, scan, and organize your notes digitally with our innovative reusable smart notebooks.
-                Customizable, eco-friendly, and designed for the modern professional.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" asChild>
-                  <Link href="/products">Shop Now</Link>
-                </Button>
-                <Button size="lg" variant="outline" asChild>
-                  <Link href="#how-it-works">
-                    How It Works
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-              <div className="flex items-center mt-8">
-                <div className="flex -space-x-2 mr-4">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="h-10 w-10 rounded-full border-2 border-white overflow-hidden">
-                      <Image
-                        src={`/placeholder.svg?height=40&width=40&text=${i}`}
-                        alt={`Customer ${i}`}
-                        width={40}
-                        height={40}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div>
-                  <div className="flex items-center">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Star key={i} className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-medium">4.9</span> from over 2,000 reviews
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="absolute -bottom-6 -right-6 w-48 h-48 bg-primary/10 rounded-full z-0"></div>
-              <div className="absolute -top-6 -left-6 w-32 h-32 bg-primary/10 rounded-full z-0"></div>
-            </div>
+      {/* 
+        Updated Hero Section
+        - Text on the left (40% width)
+        - Image on the right (60% width)
+        - Continuous "floating" transition on the image
+      */}
+      <section className="flex items-center w-full h-[80vh] overflow-hidden px-6">
+        {/* Left side (text) */}
+        <div className="w-2/5 flex flex-col justify-center space-y-6 p-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-black">
+            World's First AI-Powered Smart Reusable Notebook
+          </h1>
+          <p className="text-xl text-gray-700">
+            Experience the future of note-taking with smart templates, AI-powered OCR,
+            and seamless digital organization.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button size="lg" asChild>
+              <Link href="/products">Shop Now</Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link href="#how-to-use">How To Use</Link>
+            </Button>
           </div>
+        </div>
+
+        {/* Right side (image) */}
+        <div className="w-3/5 h-full relative">
+          <Image
+            src={BookWithAppImg}
+            alt="ReNote AI Smart Notebook"
+            fill
+            className="object-cover animate-floating transition-transform duration-1000"
+            priority
+          />
         </div>
       </section>
 
@@ -221,29 +179,21 @@ export default function HomePage() {
             </p>
           </div>
 
-          <Tabs defaultValue="bestsellers" className="mb-8">
+          <Tabs defaultValue="all" className="mb-8">
             <TabsList className="mx-auto">
-              <TabsTrigger value="bestsellers">Bestsellers</TabsTrigger>
-              <TabsTrigger value="new">New Arrivals</TabsTrigger>
-              <TabsTrigger value="sale">On Sale</TabsTrigger>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="best-sellers">Best Sellers</TabsTrigger>
             </TabsList>
-            <TabsContent value="bestsellers" className="mt-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {featuredProducts.map((product) => renderProduct(product))}
+            <TabsContent value="all" className="mt-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {featuredProducts.map(renderProduct)}
               </div>
             </TabsContent>
-            <TabsContent value="new" className="mt-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {featuredProducts.slice(0, 3).map((product) =>
-                  renderProduct({ ...product, status: "New Arrival" })
-                )}
-              </div>
-            </TabsContent>
-            <TabsContent value="sale" className="mt-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {featuredProducts.slice(1, 4).map((product) =>
-                  renderProduct({ ...product, status: "Sale" })
-                )}
+            <TabsContent value="best-sellers" className="mt-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {featuredProducts
+                  .filter((product) => product.id === "classic")
+                  .map(renderProduct)}
               </div>
             </TabsContent>
           </Tabs>
@@ -259,177 +209,184 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20">
+      {/* Why Choose ReNote AI Section */}
+      <section id="why-choose-us" className="py-20 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Why Choose Our Smart Notebooks?</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Our innovative smart notebooks combine the best of traditional writing with modern digital technology.
+            <h2 className="text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+              Why Choose ReNote AI?
+            </h2>
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-12">
+              ReNote AI is the future of note-taking—a smart reusable notebook with an AI-powered app that converts handwritten notes into digital text and includes an AI assistant.
             </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card>
-              <CardContent className="p-6">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <RefreshCw className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-medium mb-2">Infinitely Reusable</h3>
-                <p className="text-muted-foreground">
-                  Wipe clean with a damp cloth and reuse thousands of times, reducing paper waste and saving trees.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-6 w-6 text-primary"
-                  >
-                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <path d="M12 18v-6" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+              {/* Feature Cards in a single row */}
+              <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-medium mb-2">Instant Digitization</h3>
-                <p className="text-muted-foreground">
-                  Scan your notes with our app to instantly convert them to digital format and sync across all your devices.
-                </p>
-              </CardContent>
-            </Card>
+                <h3 className="text-lg font-bold mb-2 text-gray-900">Eco-friendly & Reusable</h3>
+                <p className="text-sm text-gray-600">Made with tree-free paper that is waterproof and tear-resistant.</p>
+              </div>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-6 w-6 text-primary"
-                  >
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-                    <path d="m9 12 2 2 4-4" />
+              <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-medium mb-2">AI-Powered Organization</h3>
-                <p className="text-muted-foreground">
-                  Our AI automatically organizes your notes, making them searchable and accessible whenever you need them.
-                </p>
-              </CardContent>
-            </Card>
+                <h3 className="text-lg font-bold mb-2 text-gray-900">AI-Powered OCR</h3>
+                <p className="text-sm text-gray-600">Convert, summarize &amp; translate your handwritten notes instantly.</p>
+              </div>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-6 w-6 text-primary"
-                  >
-                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-                    <circle cx="12" cy="12" r="3" />
+              <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-medium mb-2">Fully Customizable</h3>
-                <p className="text-muted-foreground">
-                  Choose from various page templates, cover designs, and binding options to create your perfect notebook.
-                </p>
-              </CardContent>
-            </Card>
+                <h3 className="text-lg font-bold mb-2 text-gray-900">Smart Templates</h3>
+                <p className="text-sm text-gray-600">Pre-built formats for tasks, meetings &amp; more.</p>
+              </div>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <Shield className="h-6 w-6 text-primary" />
+              <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <div className="bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
                 </div>
-                <h3 className="text-xl font-medium mb-2">Eco-Friendly</h3>
-                <p className="text-muted-foreground">
-                  Our notebooks are made from sustainable materials and help reduce paper waste, making them better for the environment.
-                </p>
-              </CardContent>
-            </Card>
+                <h3 className="text-lg font-bold mb-2 text-gray-900">Smart Scanning</h3>
+                <p className="text-sm text-gray-600">Auto-capture &amp; enhance documents.</p>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold mb-2 text-gray-900">Perfect For Everyone</h3>
+                <p className="text-sm text-gray-600">Ideal for Professionals, Students &amp; Businesses.</p>
+              </div>
+            </div>
+            <p className="text-xl font-semibold text-gray-700 mt-12">
+              Write. Erase. Digitize. Organize.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 bg-gray-50">
+      {/* How To Use ReNote AI Section */}
+      <section id="how-to-use" className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">How It Works</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Our smart notebooks are designed to be intuitive and easy to use. Here's how they work:
-            </p>
+            <h2 className="text-3xl font-bold mb-4">How To Use ReNote AI</h2>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="relative mx-auto mb-6">
-                <div className="h-16 w-16 rounded-full bg-primary text-white flex items-center justify-center text-xl font-bold mx-auto">
-                  1
-                </div>
-                <div className="hidden md:block absolute top-8 left-full h-0.5 w-full -ml-4 bg-gray-300"></div>
+          <div className="space-y-24">
+            {/* Step 1: Image Left, Text Right */}
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <div className="md:w-3/5">
+                <Image
+                  src={HTU1}
+                  alt="Use Pilot Frixion Pens"
+                  width={800}
+                  height={600}
+                  className="object-contain w-full"
+                />
               </div>
-              <h3 className="text-xl font-medium mb-2">Write &amp; Create</h3>
-              <p className="text-muted-foreground">
-                Use your smart notebook just like a regular notebook. Write, sketch, and create with your favorite pen.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="relative mx-auto mb-6">
-                <div className="h-16 w-16 rounded-full bg-primary text-white flex items-center justify-center text-xl font-bold mx-auto">
-                  2
-                </div>
-                <div className="hidden md:block absolute top-8 left-full h-0.5 w-full -ml-4 bg-gray-300"></div>
+              <div className="md:w-2/5 md:pl-12">
+                <h3 className="text-2xl font-bold mb-4">1. Use Pilot Frixion Pens</h3>
+                <p className="text-lg">
+                  Write and rewrite until it’s right using Pilot Frixion Pens as the paper
+                  and ink are in tune for unlimited do-overs.
+                </p>
               </div>
-              <h3 className="text-xl font-medium mb-2">Scan &amp; Digitize</h3>
-              <p className="text-muted-foreground">
-                Use our mobile app to scan your pages. Our AI technology converts your handwriting to digital text.
-              </p>
             </div>
-
-            <div className="text-center">
-              <div className="relative mx-auto mb-6">
-                <div className="h-16 w-16 rounded-full bg-primary text-white flex items-center justify-center text-xl font-bold mx-auto">
-                  3
-                </div>
+            {/* Step 2: Image Right, Text Left */}
+            <div className="flex flex-col md:flex-row-reverse items-center justify-between">
+              <div className="md:w-3/5">
+                <Image
+                  src={HTU2}
+                  alt="Scan with ReNote AI App"
+                  width={800}
+                  height={600}
+                  className="object-contain w-full"
+                />
               </div>
-              <h3 className="text-xl font-medium mb-2">Wipe &amp; Reuse</h3>
-              <p className="text-muted-foreground">
-                When you're ready, wipe the pages clean with a damp cloth and start fresh. Your notes are safely stored in the cloud.
-              </p>
+              <div className="md:w-2/5 md:pr-12">
+                <h3 className="text-2xl font-bold mb-2">
+                  2. Scan with ReNote AI App and Sync with Your Favourite Apps
+                </h3>
+                <p className="text-lg mb-2">
+                  • Use the To-Do Template and sync seamlessly with Google Tasks, Apple Reminders, and Microsoft To-Do.
+                </p>
+                <p className="text-lg mb-2">
+                  • Schedule meetings effortlessly with Microsoft Teams and Google Meet integration.
+                </p>
+                <p className="text-lg mb-2">
+                  • Create and share MOM (Minutes of Meeting) via Gmail, Outlook, and other email platforms.
+                </p>
+                <p className="text-lg">
+                  • Cloud sync with Google Drive, OneDrive, and Personal Drive.
+                </p>
+              </div>
             </div>
-          </div>
-
-          <div className="mt-16 text-center">
-            <Button size="lg" asChild>
-              <Link href="/products">Get Your Smart Notebook</Link>
-            </Button>
+            {/* Step 3: Image Left, Text Right */}
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <div className="md:w-3/5">
+                <Image
+                  src={HTU3}
+                  alt="AI Bot & OCR"
+                  width={800}
+                  height={600}
+                  className="object-contain w-full"
+                />
+              </div>
+              <div className="md:w-2/5 md:pl-12">
+                <h3 className="text-2xl font-bold mb-2">3. AI Bot &amp; OCR</h3>
+                <p className="text-lg">
+                  • AI Summarization &amp; Smart Search for quick access to important notes.
+                  <br />
+                  • Handwriting to Digital Text (OCR) with AI Assistance.
+                </p>
+              </div>
+            </div>
+            {/* Step 4: Image Right, Text Left */}
+            <div className="flex flex-col md:flex-row-reverse items-center justify-between">
+              <div className="md:w-3/5">
+                <Image
+                  src={HTU4}
+                  alt="Effortless Erasing"
+                  width={800}
+                  height={600}
+                  className="object-contain w-full"
+                />
+              </div>
+              <div className="md:w-2/5 md:pr-12">
+                <h3 className="text-2xl font-bold mb-2">4. Effortless Erasing</h3>
+                <p className="text-lg">
+                  Use the in-built eraser in the pen to undo, and to erase the full page use a wet cloth or tissue.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -441,10 +398,15 @@ export default function HomePage() {
             <div>
               <h2 className="text-3xl font-bold mb-4">About Smart Notebooks</h2>
               <p className="text-lg text-muted-foreground mb-6">
-                We're a team of innovators passionate about combining traditional writing with modern technology. Our mission is to create sustainable, reusable notebooks that enhance productivity and creativity while reducing environmental impact.
+                We're a team of innovators passionate about combining
+                traditional writing with modern technology. Our mission is to
+                create sustainable, reusable notebooks that enhance productivity
+                and creativity while reducing environmental impact.
               </p>
               <p className="text-lg text-muted-foreground mb-6">
-                Founded in 2020, we've helped over 100,000 customers worldwide digitize their notes and reduce paper waste. Our smart notebooks are designed with sustainability and functionality in mind.
+                Founded in 2020, we've helped over 100,000 customers worldwide
+                digitize their notes and reduce paper waste. Our smart notebooks
+                are designed with sustainability and functionality in mind.
               </p>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-start">
@@ -464,7 +426,6 @@ export default function HomePage() {
                   <span>1% of profits donated to environmental causes</span>
                 </li>
               </ul>
-             
             </div>
             <div className="relative">
               <Image
@@ -473,6 +434,7 @@ export default function HomePage() {
                 width={600}
                 height={600}
                 className="rounded-lg shadow-lg"
+                loading="eager"
               />
               <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-primary/10 rounded-full z-0"></div>
             </div>
@@ -486,27 +448,17 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">What Our Customers Say</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Don't just take our word for it. Here's what our customers have to say about our smart notebooks.
+              Don't just take our word for it. Here's what our customers have to
+              say about our smart notebooks.
             </p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial) => (
               <Card key={testimonial.id} className="overflow-hidden">
                 <CardContent className="p-6">
-                  <div className="flex items-center mb-4">
-                    {Array(5)
-                      .fill(0)
-                      .map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-5 w-5 ${
-                            i < testimonial.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
-                          }`}
-                        />
-                      ))}
-                  </div>
-                  <p className="mb-6 text-muted-foreground">"{testimonial.content}"</p>
+                  <p className="mb-6 text-muted-foreground">
+                    "{testimonial.content}"
+                  </p>
                   <div className="flex items-center">
                     <div className="h-12 w-12 rounded-full overflow-hidden mr-4">
                       <Image
@@ -515,11 +467,14 @@ export default function HomePage() {
                         width={48}
                         height={48}
                         className="h-full w-full object-cover"
+                        loading="eager"
                       />
                     </div>
                     <div>
                       <h4 className="font-medium">{testimonial.name}</h4>
-                      <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {testimonial.role}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -532,21 +487,41 @@ export default function HomePage() {
       {/* CTA Section */}
       <section className="py-20 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Note-Taking?</h2>
+          <h2 className="text-3xl font-bold mb-4">
+            Ready to Transform Your Note-Taking?
+          </h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Join thousands of satisfied customers and experience the perfect blend of traditional writing and digital organization.
+            Join thousands of satisfied customers and experience the perfect
+            blend of traditional writing and digital organization.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary" asChild>
               <Link href="/products">Shop Now</Link>
             </Button>
-            
           </div>
         </div>
       </section>
 
       {/* Subscription Popup Component */}
       <SubscriptionPopup />
+
+      {/* Continuous "floating" animation for the hero image */}
+      <style jsx global>{`
+        @keyframes floating {
+          0% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+        .animate-floating {
+          animation: floating 10s infinite ease-in-out;
+        }
+      `}</style>
     </main>
   );
 }

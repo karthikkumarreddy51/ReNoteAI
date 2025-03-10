@@ -17,17 +17,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Search, Menu, ShoppingCart, User, Heart, X, CheckCircle, RefreshCw } from "lucide-react"
+import { Search, Menu, ShoppingCart, User, Heart, X, CheckCircle } from "lucide-react"
 import { searchProducts } from "@/lib/search"
 
 export default function Header() {
   const pathname = usePathname()
   const router = useRouter()
-  const { cart, addItem, removeItem, updateItemQuantity, recentlyAddedItem, resetRecentlyAddedItem, refreshCart } = useCart()
+  const { items, addItem, removeItem, updateItemQuantity, recentlyAddedItem, resetRecentlyAddedItem } = useCart()
   const { searchQuery, setSearchQuery, searchResults, setSearchResults, isSearching, setIsSearching } = useSearch()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // ...existing search logic or leave as a no-op...
+  };
 
   // Track scroll position for header styling
   useEffect(() => {
@@ -39,7 +44,7 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const totalItems = cart.reduce((total, item) => total + item.quantity, 0)
+  const totalItems = items.reduce((total, item) => total + item.quantity, 0)
 
   const navItems = [
     { name: "Home", href: "/" },
@@ -79,6 +84,15 @@ export default function Header() {
     setIsCartOpen(false)
     router.push("/products")
   }
+
+  useEffect(() => {
+    if (recentlyAddedItem) {
+      const timer = setTimeout(() => {
+        resetRecentlyAddedItem()
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [recentlyAddedItem, resetRecentlyAddedItem])
 
   return (
     <header
@@ -229,7 +243,7 @@ export default function Header() {
                   <SheetTitle>Shopping Cart ({totalItems})</SheetTitle>
                 </SheetHeader>
 
-                {cart.length === 0 ? (
+                {items.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full">
                     <ShoppingCart className="h-16 w-16 text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">Your cart is empty</p>
@@ -241,7 +255,7 @@ export default function Header() {
                   <div className="flex flex-col h-full">
                     <div className="flex-1 overflow-auto py-4">
                       <ul className="space-y-4">
-                        {cart.map((item) => (
+                        {items.map((item) => (
                           <li key={item.id} className="flex items-center gap-4">
                             <div className="h-16 w-16 overflow-hidden rounded-md border">
                               <Image
@@ -261,10 +275,7 @@ export default function Header() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => {
-                                    updateItemQuantity(item.id, item.quantity - 1)
-                                    setIsCartOpen(false)
-                                  }}
+                                  onClick={() => updateItemQuantity(item.id, item.quantity - 1)}
                                 >
                                   -
                                 </Button>
@@ -272,20 +283,14 @@ export default function Header() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => {
-                                    updateItemQuantity(item.id, item.quantity + 1)
-                                    setIsCartOpen(false)
-                                  }}
+                                  onClick={() => updateItemQuantity(item.id, item.quantity + 1)}
                                 >
                                   +
                                 </Button>
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => {
-                                    removeItem(item.id)
-                                    setIsCartOpen(false)
-                                  }}
+                                  onClick={() => removeItem(item.id)}
                                 >
                                   Remove
                                 </Button>
@@ -301,7 +306,7 @@ export default function Header() {
                       <div className="flex justify-between mb-4">
                         <span className="font-medium">Subtotal</span>
                         <span className="font-medium">
-                          ${cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2)}
+                          ${items.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2)}
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground mb-4">Shipping and taxes calculated at checkout</p>
@@ -314,12 +319,6 @@ export default function Header() {
                 )}
               </SheetContent>
             </Sheet>
-
-            {/* Refresh Cart */}
-            <Button variant="ghost" size="icon" onClick={refreshCart}>
-              <RefreshCw className="h-5 w-5" />
-              <span className="sr-only">Refresh Cart</span>
-            </Button>
           </div>
         </div>
 

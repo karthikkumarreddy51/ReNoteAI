@@ -67,7 +67,7 @@ export default function Footer() {
 
           {/* Download Now */}
           <div>
-            <h3 className="text-lg font-bold mb-4">Download Now</h3>
+            <h3 className="text-lg font-bold mb-4">Download Our APP Now</h3>
             <div className="flex flex-col space-y-4">
               <Link
                 href="https://apps.apple.com/in/app/renoteai/id6479944118"

@@ -1,17 +1,22 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
 
-export type CartItem = {
+export interface CartItem {
   id: string;
   name: string;
   price: number;
   quantity: number;
   image?: string;
-  customization?: any;
-};
+  customization?: {
+    coverDesign: string;
+    pageLayout: string;
+    paperType: string;
+    bindingType: string;
+  };
+}
 
 type CartContextType = {
-  cart: CartItem[];
+  items: CartItem[];
   addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
   updateItemQuantity: (id: string, quantity: number) => void;
@@ -23,7 +28,7 @@ type CartContextType = {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
+export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [recentlyAddedItem, setRecentlyAddedItem] = useState<CartItem | null>(null);
 
@@ -44,15 +49,49 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
+  // Automatically dismiss recently added item notification after 3 seconds
+  useEffect(() => {
+    if (recentlyAddedItem) {
+      const timer = setTimeout(() => {
+        setRecentlyAddedItem(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [recentlyAddedItem]);
+
+  // Add storage synchronization
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "cart") {
+        try {
+          const newCart = e.newValue ? JSON.parse(e.newValue) : [];
+          setCart(newCart);
+        } catch (error) {
+          console.error("Error parsing cart from storage:", error);
+        }
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   const addItem = (item: CartItem) => {
     setCart((prevCart) => {
-      const existingItem = prevCart.find((i) => i.id === item.id);
+      const existingItem = prevCart.find((i) => 
+        i.id === item.id && 
+        JSON.stringify(i.customization) === JSON.stringify(item.customization)
+      );
+
       if (existingItem) {
         return prevCart.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+          i.id === item.id && 
+          JSON.stringify(i.customization) === JSON.stringify(item.customization)
+            ? { ...i, quantity: item.quantity }
+            : i
         );
       }
-      return [...prevCart, { ...item, quantity: 1 }];
+
+      return [...prevCart, item];
     });
     setRecentlyAddedItem(item);
   };
@@ -73,6 +112,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = () => {
     setCart([]);
+    localStorage.removeItem("cart");
   };
 
   const addToCart = (item: CartItem) => {
@@ -85,7 +125,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ cart, addItem, removeItem, updateItemQuantity, clearCart, addToCart, recentlyAddedItem, resetRecentlyAddedItem }}
+      value={{
+        items: cart, // updated field name for consistency
+        addItem,
+        removeItem,
+        updateItemQuantity,
+        clearCart,
+        addToCart,
+        recentlyAddedItem,
+        resetRecentlyAddedItem,
+      }}
     >
       {children}
     </CartContext.Provider>
