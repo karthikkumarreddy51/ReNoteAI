@@ -33,8 +33,7 @@ import ClassicGallery7 from "../../../images/classic/7.png";
 import ClassicGallery8 from "../../../images/classic/8.png";
 import ClassicGallery9 from "../../../images/classic/9.jpg";
 
-// Gallery images for Eco
-import EcoGallery2 from "../../../images/classic/2.png";
+// Gallery images for Eco (removed EcoGallery2)
 import EcoGallery3 from "../../../images/classic/3.png";
 import EcoGallery4 from "../../../images/classic/4.png";
 import EcoGallery5 from "../../../images/classic/5.png";
@@ -431,7 +430,6 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     // Eco
     galleryImages = [
       EcoImg.src,
-      EcoGallery2.src,
       EcoGallery3.src,
       EcoGallery4.src,
       EcoGallery5.src,
