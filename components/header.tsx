@@ -1,14 +1,16 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { usePathname, useRouter } from "next/navigation"
-import { useCart } from "@/context/cart-context"
-import { useSearch } from "@/context/search-context"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import { useCart } from "@/context/cart-context";
+import { useSearch } from "@/context/search-context";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import ReNoteLogo from "../images/ReNoteLogo.jpg";
+
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,18 +18,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Search, Menu, ShoppingCart, User, Heart, X, CheckCircle } from "lucide-react"
-import { searchProducts } from "@/lib/search"
+} from "@/components/ui/dropdown-menu";
+import { Search, Menu, ShoppingCart, User, X, CheckCircle } from "lucide-react";
+import { searchProducts } from "@/lib/search";
 
 export default function Header() {
-  const pathname = usePathname()
-  const router = useRouter()
-  const { items, addItem, removeItem, updateItemQuantity, recentlyAddedItem, resetRecentlyAddedItem } = useCart()
-  const { searchQuery, setSearchQuery, searchResults, setSearchResults, isSearching, setIsSearching } = useSearch()
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
-  const [isCartOpen, setIsCartOpen] = useState(false)
+  const pathname = usePathname();
+  const router = useRouter();
+  const { cart, itemCount, removeItem, updateItemQuantity } = useCart();
+  const {
+    searchQuery,
+    setSearchQuery,
+    searchResults,
+    setSearchResults,
+    isSearching,
+    setIsSearching,
+  } = useSearch();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,22 +46,22 @@ export default function Header() {
   // Track scroll position for header styling
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
-    }
+      setIsScrolled(window.scrollY > 10);
+    };
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-  const totalItems = items.reduce((total, item) => total + item.quantity, 0)
+  const totalItems = itemCount;
 
   const navItems = [
     { name: "Home", href: "/" },
     { name: "Products", href: "/products" },
-    { name: "How It Works", href: "/#how-it-works" },
-    { name: "About Us", href: "/#about-us" },
+    { name: "How It Works", href: "/#how-to-use-section" },
+    { name: "About Us", href: "/#achievements-section" },
     { name: "Contact", href: "/#contact" },
-  ]
+  ];
 
   const handleNavLinkClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -60,39 +69,30 @@ export default function Header() {
   ) => {
     // If it's a hash link on the homepage, handle smooth scrolling
     if (href.startsWith("/#") && pathname === "/") {
-      e.preventDefault()
-      const targetId = href.substring(2)
-      const targetElement = document.getElementById(targetId)
+      e.preventDefault();
+      const targetId = href.substring(2);
+      const targetElement = document.getElementById(targetId);
 
       if (targetElement) {
-        targetElement.scrollIntoView({ behavior: "smooth" })
+        targetElement.scrollIntoView({ behavior: "smooth" });
       }
     }
-  }
+  };
 
   const handleViewCart = () => {
-    setIsCartOpen(false)
-    router.push("/cart")
-  }
+    setIsCartOpen(false);
+    setTimeout(() => router.push("/cart"), 0);
+  };
 
   const handleCheckout = () => {
-    setIsCartOpen(false)
-    router.push("/checkout")
-  }
+    setIsCartOpen(false);
+    setTimeout(() => router.push("/checkout"), 0);
+  };
 
   const handleShopNow = () => {
-    setIsCartOpen(false)
-    router.push("/products")
-  }
-
-  useEffect(() => {
-    if (recentlyAddedItem) {
-      const timer = setTimeout(() => {
-        resetRecentlyAddedItem()
-      }, 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [recentlyAddedItem, resetRecentlyAddedItem])
+    setIsCartOpen(false);
+    router.push("/products");
+  };
 
   return (
     <header
@@ -138,13 +138,15 @@ export default function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <Image
-              src="/placeholder.svg?height=32&width=32&text=SN"
-              alt="Smart Notebooks"
-              width={32}
-              height={32}
-              className="mr-2"
-            />
+            <div className="relative w-10 h-10 mr-2">
+              <Image
+                src={ReNoteLogo}
+                alt="ReNote AI Logo"
+                fill
+                className="object-contain rounded-lg"
+                priority
+              />
+            </div>
             <span className="font-bold text-xl hidden sm:inline-block">ReNote AI</span>
           </Link>
 
@@ -217,14 +219,6 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Wishlist */}
-            <Button variant="ghost" size="icon" asChild>
-              <Link href="/wishlist">
-                <Heart className="h-5 w-5" />
-                <span className="sr-only">Wishlist</span>
-              </Link>
-            </Button>
-
             {/* Cart */}
             <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
               <SheetTrigger asChild>
@@ -243,7 +237,7 @@ export default function Header() {
                   <SheetTitle>Shopping Cart ({totalItems})</SheetTitle>
                 </SheetHeader>
 
-                {items.length === 0 ? (
+                {cart.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full">
                     <ShoppingCart className="h-16 w-16 text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">Your cart is empty</p>
@@ -255,7 +249,7 @@ export default function Header() {
                   <div className="flex flex-col h-full">
                     <div className="flex-1 overflow-auto py-4">
                       <ul className="space-y-4">
-                        {items.map((item) => (
+                        {cart.map((item: any) => (
                           <li key={item.id} className="flex items-center gap-4">
                             <div className="h-16 w-16 overflow-hidden rounded-md border">
                               <Image
@@ -269,13 +263,19 @@ export default function Header() {
                             <div className="flex-1">
                               <h4 className="text-sm font-medium">{item.name}</h4>
                               <p className="text-sm text-muted-foreground">
-                                Qty: {item.quantity} × ${item.price.toFixed(2)}
+                                Qty: {item.quantity} × Rs.{item.price.toFixed(2)}
                               </p>
                               <div className="flex items-center space-x-2">
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => updateItemQuantity(item.id, item.quantity - 1)}
+                                  onClick={() => {
+                                    if (item.quantity - 1 <= 0) {
+                                      removeItem(item.id);
+                                    } else {
+                                      updateItemQuantity(item.id, item.quantity - 1);
+                                    }
+                                  }}
                                 >
                                   -
                                 </Button>
@@ -296,7 +296,7 @@ export default function Header() {
                                 </Button>
                               </div>
                             </div>
-                            <p className="text-sm font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                            <p className="text-sm font-medium">{`Rs.${(item.price * item.quantity).toFixed(2)}`}</p>
                           </li>
                         ))}
                       </ul>
@@ -306,7 +306,7 @@ export default function Header() {
                       <div className="flex justify-between mb-4">
                         <span className="font-medium">Subtotal</span>
                         <span className="font-medium">
-                          ${items.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2)}
+                          {`Rs.${cart.reduce((total, item: any) => total + item.price * item.quantity, 0).toFixed(2)}`}
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground mb-4">Shipping and taxes calculated at checkout</p>
@@ -340,19 +340,6 @@ export default function Header() {
           </div>
         )}
       </div>
-
-      {/* Recently Added Item Notification */}
-      {recentlyAddedItem && (
-        <div className="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-4 flex items-center space-x-4">
-          <CheckCircle className="text-green-500 h-6 w-6" />
-          <div>
-            <p className="font-medium">{recentlyAddedItem.name} added to cart</p>
-            <Button variant="link" size="sm" onClick={resetRecentlyAddedItem}>
-              Dismiss
-            </Button>
-          </div>
-        </div>
-      )}
     </header>
-  )
+  );
 }

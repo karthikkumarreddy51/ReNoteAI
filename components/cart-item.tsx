@@ -6,10 +6,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2, Pencil } from "lucide-react";
-import { useCart, CartItem as CartItemType } from "@/context/cart-context";
+import { useCart } from "@/context/cart-context";
+import type { CartItem } from "@/context/cart-context"; // Use type-only import
 
 interface CartItemProps {
-  item: CartItemType;
+  item: CartItem;
+  onUpdateQuantity: (id: string, quantity: number) => void;
+  onRemove: (id: string) => void;
 }
 
 export default function CartItem({ item }: CartItemProps) {
@@ -63,7 +66,7 @@ export default function CartItem({ item }: CartItemProps) {
             </Link>
             {item.customization && (
               <div className="mt-1 text-xs text-muted-foreground">
-                <p>Color: {item.customization.coverColor}</p>
+                <p>Cover: {item.customization.coverDesign}</p> {/* Changed from coverColor */}
                 <p>Layout: {item.customization.pageLayout}</p>
                 <p>Paper: {item.customization.paperType}</p>
                 <p>Binding: {item.customization.bindingType}</p>

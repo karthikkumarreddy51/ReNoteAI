@@ -1,11 +1,12 @@
+// Ensure react-hot-toast is installed: npm install react-hot-toast
 "use client";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Plus, Minus } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 // Main images
 import AirImg from "../../../images/Air.png";
@@ -113,7 +114,9 @@ interface ProductDetailPageProps {
 
 export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { id } = params;
-  const product = products.find((p) => p.id.toLowerCase() === id.toLowerCase());
+  const product = products.find(
+    (p) => p.id.toLowerCase() === id.toLowerCase()
+  );
   const { addToCart } = useCart();
   const router = useRouter();
 
@@ -130,20 +133,19 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     bindingType: product.customizations?.bindingType[0] || "",
   }));
 
-  // Declare gallery and product detail variables
   let galleryImages: string[] = [];
   let productTitle: string = "";
   let productFeatures: JSX.Element | null = null;
   const [selectedImage, setSelectedImage] = useState<number>(0);
 
-  // Remove quantity state and quantity controls since we will add with quantity = 1 always
-  // const [quantity, setQuantity] = useState(1);
-  // const [showQuantityControls, setShowQuantityControls] = useState(false);
-
-  // Remove all zoom-related state and handlers
-  // const [isZooming, setIsZooming] = useState(false);
-  // const [lensPos, setLensPos] = useState({ x: 0, y: 0 });
   const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  // Zoom state for main image
+  const [isZoomActive, setIsZoomActive] = useState(false);
+  const [zoomPos, setZoomPos] = useState({
+    backgroundX: "0%",
+    backgroundY: "0%",
+  });
 
   // Handlers for Add to Cart
   const handleAddToCart = () => {
@@ -159,7 +161,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       product.discountedPrice < product.price
         ? product.discountedPrice
         : product.price;
-    // Always use quantity = 1 now
+
     addToCart({
       id: product.id,
       name: product.name,
@@ -168,18 +170,38 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       image: product.image,
       customization: selectedCustomization,
     });
-    // No quantity controls: do nothing extra here
+    
+    // Add success toast if not showing customization modal
+    if (!product.customizations) {
+      toast.success(`${product.name} added to cart`, {
+        duration: 2000,
+        position: 'top-center',
+        style: {
+          background: '#4F46E5',
+          color: '#fff',
+          padding: '16px',
+          borderRadius: '8px',
+        },
+        icon: '🛒',
+      });
+    }
   };
 
   const confirmAddToCart = () => {
     addProductToCart();
     setShowCustomizationModal(false);
+    toast.success(`${product.name} added to cart`, {
+      duration: 2000,
+      position: 'top-center',
+      style: {
+        background: '#4F46E5',
+        color: '#fff',
+        padding: '16px',
+        borderRadius: '8px',
+      },
+      icon: '🛒',
+    });
   };
-
-  // Remove updateQuantity and zoom mouse event handlers
-  // const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => { ... };
-  // const handleMouseEnter = () => { ... };
-  // const handleMouseLeave = () => { ... };
 
   // Set gallery images and content based on product type
   if (product.id.toLowerCase() === "air") {
@@ -214,8 +236,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             </h3>
             <ul className="list-disc pl-6">
               <li>
-                To-Do List (2 Pages) – Sync tasks effortlessly with Google Tasks,
-                Apple Reminders, and Microsoft To-Do.
+                To-Do List (2 Pages) – Sync tasks effortlessly with Google
+                Tasks, Apple Reminders, and Microsoft To-Do.
               </li>
               <li>
                 Schedule Meetings (2 Pages) – Plan efficiently with MS Teams and
@@ -322,8 +344,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             </h3>
             <ul className="list-disc pl-6">
               <li>
-                To-Do List (2 Pages) – Sync tasks effortlessly with Google Tasks,
-                Apple Reminders, and Microsoft To-Do.
+                To-Do List (2 Pages) – Sync tasks effortlessly with Google
+                Tasks, Apple Reminders, and Microsoft To-Do.
               </li>
               <li>
                 Schedule Meetings (2 Pages) – Plan efficiently with MS Teams and
@@ -526,7 +548,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
       <div className="mt-8 flex flex-col md:flex-row gap-8 relative">
         {/* LEFT SECTION: Thumbnails, Main Image, and Cart */}
-        <div className="md:w-1/2 flex flex-col" style={{ maxHeight: "800px" }}>
+        <div className="md:w-3/5 flex flex-col" style={{ maxHeight: "800px" }}>
           <div className="flex flex-row">
             {/* Thumbnails Column */}
             <div
@@ -553,13 +575,25 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
               ))}
             </div>
 
-            {/* Main Image Container */}
+            {/* Main Image Container with Zoom Feature */}
             <div
               ref={imageContainerRef}
-              className="relative flex-grow border rounded-lg mb-4 cursor-pointer aspect-square"
-              onClick={() => { /* removed lightbox trigger */ }}
+              className="relative flex-grow border rounded-lg mb-4 cursor-pointer"
+              onMouseEnter={() => setIsZoomActive(true)}
+              onMouseMove={(e) => {
+                const rect = imageContainerRef.current?.getBoundingClientRect();
+                if (!rect) return;
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const xPercent = (x / rect.width) * 100;
+                const yPercent = (y / rect.height) * 100;
+                setZoomPos({
+                  backgroundX: `${xPercent}%`,
+                  backgroundY: `${yPercent}%`,
+                });
+              }}
+              onMouseLeave={() => setIsZoomActive(false)}
             >
-              {/* Main Product Image */}
               <Image
                 src={galleryImages[selectedImage]}
                 alt="Main product"
@@ -577,18 +611,32 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           </div>
         </div>
 
-        {/* RIGHT SECTION: Product Details */}
-        <div className="md:w-1/2 h-[800px] overflow-y-auto pr-4 custom-scrollbar">
-          <h1 className="text-2xl font-bold mb-2">{productTitle}</h1>
-          <div className="flex items-center mb-6">
-            <span className="text-2xl font-semibold text-black">
-              ₹{product.discountedPrice.toFixed(2)}
-            </span>
-            <span className="ml-3 text-lg line-through text-gray-500">
-              ₹{product.price.toFixed(2)}
-            </span>
-          </div>
-          {productFeatures}
+        {/* RIGHT SECTION: Product Details or Zoom View */}
+        <div className="md:w-2/5 h-[800px] overflow-y-auto pr-4 custom-scrollbar">
+          {isZoomActive ? (
+            <div
+              className="w-full h-full border rounded-lg transition-all duration-200"
+              style={{
+                backgroundImage: `url(${galleryImages[selectedImage]})`,
+                backgroundRepeat: "no-repeat",
+                backgroundSize: "300%",
+                backgroundPosition: `${zoomPos.backgroundX} ${zoomPos.backgroundY}`,
+              }}
+            ></div>
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold mb-2">{productTitle}</h1>
+              <div className="flex items-center mb-6">
+                <span className="text-2xl font-semibold text-black">
+                  ₹{product.discountedPrice.toFixed(2)}
+                </span>
+                <span className="ml-3 text-lg line-through text-gray-500">
+                  ₹{product.price.toFixed(2)}
+                </span>
+              </div>
+              {productFeatures}
+            </>
+          )}
         </div>
       </div>
 

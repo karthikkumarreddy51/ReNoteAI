@@ -9,6 +9,7 @@ import { CartProvider } from "@/context/cart-context"
 import WhatsAppChat from "@/components/whatsapp-chat"
 import SubscriptionPopup from "@/components/subscription-popup"
 import { SearchProvider } from "@/context/search-context"
+import { Toaster as HotToaster } from "react-hot-toast"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -35,6 +36,13 @@ export default function RootLayout({
             {children}
             <Footer />
             <Toaster />
+            <HotToaster
+              position="top-center"
+              reverseOrder={false}
+              containerStyle={{
+                top: 80,
+              }}
+            />
             <WhatsAppChat />
             {/* Render the subscription popup only once in the RootLayout */}
             <SubscriptionPopup />

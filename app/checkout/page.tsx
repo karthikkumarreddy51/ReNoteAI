@@ -1,89 +1,94 @@
-"use client"
+"use client";
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, CreditCard, Truck, Shield } from "lucide-react";
+import { useCart } from "@/context/cart-context";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, CreditCard, Truck, Shield } from "lucide-react"
-import { useCart } from "@/context/cart-context"
-import axios from "axios"
+/* Move ambient declaration to top level */
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 export default function CheckoutPage() {
-  const [paymentMethod, setPaymentMethod] = useState("razorpay")
-  const [shippingMethod, setShippingMethod] = useState("standard")
-  const [isProcessing, setIsProcessing] = useState(false)
-  const { cart, clearCart } = useCart()
+  const router = useRouter();
+  const [paymentMethod, setPaymentMethod] = useState("razorpay");
+  const [shippingMethod, setShippingMethod] = useState("standard");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { cart, clearCart } = useCart();
 
   // Calculate totals
-  const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0)
-  const shipping = shippingMethod === "express" ? 9.99 : shippingMethod === "standard" ? 4.99 : 0
-  const tax = subtotal * 0.08 // 8% tax rate
-  const total = subtotal + shipping + tax
+  const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  const shipping =
+    shippingMethod === "express"
+      ? 9.99
+      : shippingMethod === "standard"
+      ? 4.99
+      : 0;
+  const tax = subtotal * 0.08; // 8% tax rate
+  const total = subtotal + shipping + tax;
 
-  // Shipping rates from Shippo
   const shippingRates = [
     { id: "standard", name: "Standard Shipping", price: 4.99, days: "3-5" },
     { id: "express", name: "Express Shipping", price: 9.99, days: "1-2" },
     { id: "free", name: "Free Shipping", price: 0, days: "5-7", minimum: 50 },
-  ]
+  ];
 
-  // Helper function that performs payment processing
   const processPayment = async () => {
-    setIsProcessing(true)
+    setIsProcessing(true);
     try {
-      const order = await axios.post('/api/razorpay', { amount: total * 100, currency: 'INR' })
+      const order = await axios.post("/api/razorpay", { amount: total * 100, currency: "INR" });
       const options = {
         key: process.env.RAZORPAY_KEY_ID,
         amount: order.data.amount,
         currency: order.data.currency,
-        name: 'ReNote AI',
-        description: 'Smart Notebook Purchase',
+        name: "ReNote AI",
+        description: "Smart Notebook Purchase",
         order_id: order.data.id,
-        handler: async (response) => {
-          // Handle successful payment
-          await axios.post('/api/createOrder', {
+        handler: async (response: any) => {  // <-- explicit any type added here
+          await axios.post("/api/createOrder", {
             products: cart,
             totalAmount: total,
             shippingAddress: {
               // Add shipping address details here
-            }
-          })
-          clearCart()
-          router.push('/checkout/success')
+            },
+          });
+          clearCart();
+          router.push("/checkout/success");
         },
         prefill: {
-          name: 'Customer Name',
-          email: 'customer@example.com',
-          contact: '9999999999'
+          name: "Customer Name",
+          email: "customer@example.com",
+          contact: "9999999999",
         },
-        notes: {
-          address: 'Customer Address'
-        },
-        theme: {
-          color: '#3399cc'
-        }
-      }
-      const rzp = new window.Razorpay(options)
-      rzp.open()
+        notes: { address: "Customer Address" },
+        theme: { color: "#3399cc" },
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     } catch (error) {
-      console.error('Payment processing failed', error)
+      console.error("Payment processing failed", error);
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
-  // Form submit handler (for the form element)
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    await processPayment()
-  }
+    e.preventDefault();
+    await processPayment();
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -301,7 +306,7 @@ export default function CheckoutPage() {
 
             <div className="mt-8 lg:hidden">
               <Button type="submit" className="w-full" size="lg" disabled={isProcessing}>
-                {isProcessing ? "Processing..." : `Pay $${total.toFixed(2)}`}
+                {isProcessing ? "Processing..." : `Pay Rs.${total.toFixed(2)}`}
               </Button>
             </div>
           </form>
@@ -342,15 +347,15 @@ export default function CheckoutPage() {
             <div className="space-y-2 mb-4">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>{`Rs.${subtotal.toFixed(2)}`}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
-                <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                <span>{shipping === 0 ? "Free" : `Rs.${shipping.toFixed(2)}`}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Tax</span>
-                <span>${tax.toFixed(2)}</span>
+                <span>{`Rs.${tax.toFixed(2)}`}</span>
               </div>
             </div>
 
@@ -358,13 +363,13 @@ export default function CheckoutPage() {
 
             <div className="flex justify-between mb-6">
               <span className="font-medium">Total</span>
-              <span className="font-bold text-lg">${total.toFixed(2)}</span>
+              <span className="font-bold text-lg">{`Rs.${total.toFixed(2)}`}</span>
             </div>
 
             <div className="hidden lg:block">
               {/* Use the helper function directly onClick */}
               <Button type="button" className="w-full" size="lg" disabled={isProcessing} onClick={processPayment}>
-                {isProcessing ? "Processing..." : `Pay $${total.toFixed(2)}`}
+                {isProcessing ? "Processing..." : `Pay Rs.${total.toFixed(2)}`}
               </Button>
             </div>
 
@@ -386,5 +391,5 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -10,8 +10,9 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, CheckCircle, Calendar, Mail, Cloud } from "lucide-react";
 import SubscriptionPopup from "@/components/subscription-popup";
+import ContactForm from "@/components/contact-form";
 
 // Import images from your local folder
 import AirImg from "../images/Air.png";
@@ -22,6 +23,14 @@ import HTU1 from "../images/htu1.png";
 import HTU2 from "../images/htu2.png";
 import HTU3 from "../images/htu3.png";
 import HTU4 from "../images/htu4.jpg";
+// Updated achievement image imports with relative paths
+import NorthStarImg from "../images/achievements/northstar.png";
+import GoogleImg from "../images/achievements/google.png";
+import MeityImg from "../images/achievements/meity.png";
+import MicrosoftImg from "../images/achievements/microsoft.png";
+import NvidiaImg from "../images/achievements/nvidia.png";
+import AICImg from "../images/achievements/aic.png";
+import THubImg from "../images/achievements/thub.png";
 
 interface Product {
   id: string;
@@ -32,46 +41,11 @@ interface Product {
   status?: string;
 }
 
-interface Testimonial {
-  id: string;
-  name: string;
-  role: string;
-  content: string;
-  avatar: string;
-}
-
 export default function HomePage() {
   const featuredProducts: Product[] = [
     { id: "air", name: "Air", image: AirImg.src, price: 2499, discountedPrice: 999 },
     { id: "classic", name: "Renoteclassic", image: ClassicImg.src, price: 2499, discountedPrice: 999 },
     { id: "eco", name: "Eco", image: EcoImg.src, price: 999, discountedPrice: 499 },
-  ];
-
-  const testimonials: Testimonial[] = [
-    {
-      id: "1",
-      name: "Sarah Johnson",
-      role: "Marketing Director",
-      content:
-        "I've been using for 6 months now and it has completely transformed how I take notes in meetings. The ability to digitize my handwritten notes instantly is a game-changer!",
-      avatar: "/placeholder.svg?height=64&width=64",
-    },
-    {
-      id: "2",
-      name: "Michael Chen",
-      role: "Software Engineer",
-      content:
-        "As a developer, I was skeptical about using a notebook instead of typing, but the Smart Notebook has won me over. The OCR technology is incredibly accurate, and I love having my diagrams and code snippets digitized.",
-      avatar: "/placeholder.svg?height=64&width=64",
-    },
-    {
-      id: "3",
-      name: "Emily Rodriguez",
-      role: "Student",
-      content:
-        "This notebook has been a lifesaver for my studies. I can take notes in class and have them organized digitally without having to type everything up later. Highly recommend for students!",
-      avatar: "/placeholder.svg?height=64&width=64",
-    },
   ];
 
   // Renders a single featured product card
@@ -131,45 +105,126 @@ export default function HomePage() {
 
   return (
     <main>
-      {/* 
-        Updated Hero Section
-        - Text on the left (40% width)
-        - Image on the right (60% width)
-        - Continuous "floating" transition on the image
-      */}
-      <section className="flex items-center w-full h-[80vh] overflow-hidden px-6">
-        {/* Left side (text) */}
-        <div className="w-2/5 flex flex-col justify-center space-y-6 p-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-black">
-            World's First AI-Powered Smart Reusable Notebook
-          </h1>
-          <p className="text-xl text-gray-700">
-            Experience the future of note-taking with smart templates, AI-powered OCR,
-            and seamless digital organization.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button size="lg" asChild>
-              <Link href="/products">Shop Now</Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="#how-to-use">How To Use</Link>
-            </Button>
-          </div>
+      {/* Hero Section */}
+      <section className="relative min-h-[85vh] bg-gradient-to-br from-indigo-50 via-white to-blue-50 overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]"></div>
         </div>
 
-        {/* Right side (image) */}
-        <div className="w-3/5 h-full relative">
-          <Image
-            src={BookWithAppImg}
-            alt="ReNote AI Smart Notebook"
-            fill
-            className="object-cover animate-floating transition-transform duration-1000"
-            priority
-          />
+        <div className="container mx-auto px-4">
+          <div className="relative grid grid-cols-1 md:grid-cols-2 gap-8 items-center min-h-[85vh]">
+            {/* Left side (text) */}
+            <div className="relative z-10 space-y-6">
+              <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+                <span className="block text-[#000080]">World’s First</span>
+                <span className="block">
+                  <span className="text-[#000080]">AI</span>
+                  <span className="text-gray-800">-Powered Smart </span>
+                  <span className="text-[#21C27D]">Re</span>
+                  <span className="text-gray-800">usable Notebook</span>
+                </span>
+              </h1>
+              <p className="text-xl text-gray-600 md:pr-8">
+                Experience the future of note-taking with smart templates, AI-powered OCR,
+                and seamless digital organization.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <Button 
+                  size="lg" 
+                  className="text-lg px-8 py-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                  asChild
+                >
+                  <Link href="/products">Shop Now</Link>
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="text-lg px-8 py-6 hover:bg-white/50 transform transition-all duration-300 hover:scale-105"
+                  asChild
+                >
+                  <Link href="#how-to-use-section">
+                    How To Use
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            {/* Right side (image) with animations */}
+            <div className="relative h-[500px] md:h-[600px]">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative w-full h-full">
+                  <Image
+                    src={BookWithAppImg}
+                    alt="ReNote AI Smart Notebook"
+                    fill
+                    className="object-contain animate-hero-float"
+                    priority
+                  />
+                  {/* Decorative elements */}
+                  <div className="absolute -inset-2 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-full filter blur-3xl animate-pulse opacity-75"></div>
+                  <div className="absolute top-1/4 -right-12 w-24 h-24 bg-blue-500/20 rounded-full animate-blob"></div>
+                  <div className="absolute bottom-1/4 -left-12 w-24 h-24 bg-indigo-500/20 rounded-full animate-blob animation-delay-2000"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Featured Products Section */}
+      {/* Animations */}
+      <style jsx global>{`
+        @keyframes hero-float {
+          0% {
+            transform: translate(0, 0) rotate(0) scale(1);
+          }
+          25% {
+            transform: translate(-5px, -10px) rotate(-1deg) scale(1.01);
+          }
+          50% {
+            transform: translate(5px, 5px) rotate(1deg) scale(1.02);
+          }
+          75% {
+            transform: translate(10px, -5px) rotate(0deg) scale(1.01);
+          }
+          100% {
+            transform: translate(0, 0) rotate(0) scale(1);
+          }
+        }
+
+        @keyframes blob {
+          0%, 100% {
+            transform: translate(0, 0) scale(1);
+            opacity: 0.7;
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+            opacity: 0.4;
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+            opacity: 0.8;
+          }
+        }
+
+        .animate-hero-float {
+          animation: hero-float 12s ease-in-out infinite;
+        }
+
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
+
+      {/* Featured Products */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -209,7 +264,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why Choose ReNote AI Section */}
+      {/* Why Choose ReNote AI */}
       <section id="why-choose-us" className="py-20 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -220,7 +275,7 @@ export default function HomePage() {
               ReNote AI is the future of note-taking—a smart reusable notebook with an AI-powered app that converts handwritten notes into digital text and includes an AI assistant.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-              {/* Feature Cards in a single row */}
+              {/* Feature Cards */}
               <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,7 +299,7 @@ export default function HomePage() {
               <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z" />
                   </svg>
                 </div>
                 <h3 className="text-lg font-bold mb-2 text-gray-900">Smart Templates</h3>
@@ -264,7 +319,7 @@ export default function HomePage() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                      d="M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                     />
                   </svg>
                 </div>
@@ -287,218 +342,314 @@ export default function HomePage() {
                 <p className="text-sm text-gray-600">Ideal for Professionals, Students &amp; Businesses.</p>
               </div>
             </div>
-            <p className="text-xl font-semibold text-gray-700 mt-12">
-              Write. Erase. Digitize. Organize.
-            </p>
           </div>
         </div>
       </section>
 
       {/* How To Use ReNote AI Section */}
-      <section id="how-to-use" className="py-20">
+      <section id="how-to-use-section" className="py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">How To Use ReNote AI</h2>
-          </div>
-          <div className="space-y-24">
-            {/* Step 1: Image Left, Text Right */}
-            <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="md:w-3/5">
-                <Image
-                  src={HTU1}
-                  alt="Use Pilot Frixion Pens"
-                  width={800}
-                  height={600}
-                  className="object-contain w-full"
-                />
-              </div>
-              <div className="md:w-2/5 md:pl-12">
-                <h3 className="text-2xl font-bold mb-4">1. Use Pilot Frixion Pens</h3>
-                <p className="text-lg">
-                  Write and rewrite until it’s right using Pilot Frixion Pens as the paper
-                  and ink are in tune for unlimited do-overs.
-                </p>
-              </div>
-            </div>
-            {/* Step 2: Image Right, Text Left */}
-            <div className="flex flex-col md:flex-row-reverse items-center justify-between">
-              <div className="md:w-3/5">
-                <Image
-                  src={HTU2}
-                  alt="Scan with ReNote AI App"
-                  width={800}
-                  height={600}
-                  className="object-contain w-full"
-                />
-              </div>
-              <div className="md:w-2/5 md:pr-12">
-                <h3 className="text-2xl font-bold mb-2">
-                  2. Scan with ReNote AI App and Sync with Your Favourite Apps
-                </h3>
-                <p className="text-lg mb-2">
-                  • Use the To-Do Template and sync seamlessly with Google Tasks, Apple Reminders, and Microsoft To-Do.
-                </p>
-                <p className="text-lg mb-2">
-                  • Schedule meetings effortlessly with Microsoft Teams and Google Meet integration.
-                </p>
-                <p className="text-lg mb-2">
-                  • Create and share MOM (Minutes of Meeting) via Gmail, Outlook, and other email platforms.
-                </p>
-                <p className="text-lg">
-                  • Cloud sync with Google Drive, OneDrive, and Personal Drive.
-                </p>
-              </div>
-            </div>
-            {/* Step 3: Image Left, Text Right */}
-            <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="md:w-3/5">
-                <Image
-                  src={HTU3}
-                  alt="AI Bot & OCR"
-                  width={800}
-                  height={600}
-                  className="object-contain w-full"
-                />
-              </div>
-              <div className="md:w-2/5 md:pl-12">
-                <h3 className="text-2xl font-bold mb-2">3. AI Bot &amp; OCR</h3>
-                <p className="text-lg">
-                  • AI Summarization &amp; Smart Search for quick access to important notes.
-                  <br />
-                  • Handwriting to Digital Text (OCR) with AI Assistance.
-                </p>
-              </div>
-            </div>
-            {/* Step 4: Image Right, Text Left */}
-            <div className="flex flex-col md:flex-row-reverse items-center justify-between">
-              <div className="md:w-3/5">
-                <Image
-                  src={HTU4}
-                  alt="Effortless Erasing"
-                  width={800}
-                  height={600}
-                  className="object-contain w-full"
-                />
-              </div>
-              <div className="md:w-2/5 md:pr-12">
-                <h3 className="text-2xl font-bold mb-2">4. Effortless Erasing</h3>
-                <p className="text-lg">
-                  Use the in-built eraser in the pen to undo, and to erase the full page use a wet cloth or tissue.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* About Us Section */}
-      <section id="about-us" className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold mb-4">About Smart Notebooks</h2>
-              <p className="text-lg text-muted-foreground mb-6">
-                We're a team of innovators passionate about combining
-                traditional writing with modern technology. Our mission is to
-                create sustainable, reusable notebooks that enhance productivity
-                and creativity while reducing environmental impact.
-              </p>
-              <p className="text-lg text-muted-foreground mb-6">
-                Founded in 2020, we've helped over 100,000 customers worldwide
-                digitize their notes and reduce paper waste. Our smart notebooks
-                are designed with sustainability and functionality in mind.
-              </p>
-              <ul className="space-y-2 mb-6">
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-primary mr-2 mt-0.5" />
-                  <span>Saved over 10 million sheets of paper</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-primary mr-2 mt-0.5" />
-                  <span>100% carbon-neutral shipping</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-primary mr-2 mt-0.5" />
-                  <span>Sustainable materials and manufacturing</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-primary mr-2 mt-0.5" />
-                  <span>1% of profits donated to environmental causes</span>
-                </li>
-              </ul>
-            </div>
-            <div className="relative">
-              <Image
-                src="/placeholder.svg?height=600&width=600&text=Our+Team"
-                alt="Our Team"
-                width={600}
-                height={600}
-                className="rounded-lg shadow-lg"
-                loading="eager"
-              />
-              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-primary/10 rounded-full z-0"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">What Our Customers Say</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Don't just take our word for it. Here's what our customers have to
-              say about our smart notebooks.
+            <h2 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+              How To Use ReNote AI
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Experience seamless note-taking with our smart reusable notebook
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial) => (
-              <Card key={testimonial.id} className="overflow-hidden">
-                <CardContent className="p-6">
-                  <p className="mb-6 text-muted-foreground">
-                    "{testimonial.content}"
-                  </p>
-                  <div className="flex items-center">
-                    <div className="h-12 w-12 rounded-full overflow-hidden mr-4">
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {[
+              {
+                image: HTU1,
+                step: "Step 1",
+                title: "Write, Erase & Perfect",
+                content: (
+                  <div className="space-y-6">
+                    {/* Image Container with Writing Animation */}
+                    <div className="relative h-[400px] mb-8 group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 rounded-2xl group-hover:scale-110 transition-transform duration-500"></div>
                       <Image
-                        src={testimonial.avatar || "/placeholder.svg"}
-                        alt={testimonial.name}
-                        width={48}
-                        height={48}
-                        className="h-full w-full object-cover"
-                        loading="eager"
+                        src={HTU1}
+                        alt="Use Pilot Frixion Pens"
+                        fill
+                        className="object-contain p-4 group-hover:scale-105 transition-all duration-500"
                       />
+                      <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent rounded-2xl"></div>
                     </div>
-                    <div>
-                      <h4 className="font-medium">{testimonial.name}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {testimonial.role}
-                      </p>
+
+                    {/* Interactive Writing Steps */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="transform hover:-translate-y-1 transition-all duration-300">
+                        <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/50 border border-blue-100/50 shadow-sm hover:shadow-md transition-all duration-300">
+                          <div className="text-3xl font-bold text-blue-600 mb-2">1</div>
+                          <h4 className="font-semibold text-gray-900 text-center">Write</h4>
+                          <p className="text-gray-600 mt-1 text-center text-sm">Express your thoughts freely with Pilot Frixion Pens</p>
+                        </div>
+                      </div>
+
+                      <div className="transform hover:-translate-y-1 transition-all duration-300">
+                        <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50/50 border border-purple-100/50 shadow-sm hover:shadow-md transition-all duration-300">
+                          <div className="text-3xl font-bold text-purple-600 mb-2">2</div>
+                          <h4 className="font-semibold text-gray-900 text-center">Erase</h4>
+                          <p className="text-gray-600 mt-1 text-center text-sm">Mistakes happen - just erase and start again</p>
+                        </div>
+                      </div>
+
+                      <div className="transform hover:-translate-y-1 transition-all duration-300">
+                        <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-green-50 to-teal-50/50 border border-green-100/50 shadow-sm hover:shadow-md transition-all duration-300">
+                          <div className="text-3xl font-bold text-green-600 mb-2">3</div>
+                          <h4 className="font-semibold text-gray-900 text-center">Perfect</h4>
+                          <p className="text-gray-600 mt-1 text-center text-sm">Keep refining until it's just right</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Feature Highlights */}
+                    <div className="bg-gray-50 p-4 rounded-xl">
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-center text-gray-700">
+                          <Check className="h-4 w-4 text-green-500 mr-2" />
+                          Unlimited rewrites with Pilot Frixion Pens
+                        </li>
+                        <li className="flex items-center text-gray-700">
+                          <Check className="h-4 w-4 text-green-500 mr-2" />
+                          No paper waste - environmentally friendly
+                        </li>
+                        <li className="flex items-center text-gray-700">
+                          <Check className="h-4 w-4 text-green-500 mr-2" />
+                          Smooth writing experience like traditional paper
+                        </li>
+                      </ul>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                ),
+              },
+              {
+                image: HTU2,
+                step: "Step 2",
+                title: "Smart Sync & Integration",
+                content: (
+                  <div className="space-y-6">
+                    {/* Image Container */}
+                    <div className="relative h-[400px] mb-8 group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 rounded-2xl group-hover:scale-110 transition-transform duration-500"></div>
+                      <Image
+                        src={HTU2}
+                        alt="Smart Sync & Integration"
+                        fill
+                        className="object-contain p-4 group-hover:scale-105 transition-all duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent rounded-2xl"></div>
+                    </div>
+
+                    {/* Features Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="transform hover:-translate-y-1 transition-all duration-300">
+                        <div className="flex items-start space-x-3 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/50 border border-blue-100/50 shadow-sm hover:shadow-md transition-all duration-300">
+                          <div className="flex-shrink-0 p-2.5 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full">
+                            <CheckCircle className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">Task Management</h4>
+                            <p className="text-gray-600 mt-1">Seamless sync with Google Tasks, Apple Reminders & Microsoft To-Do</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="transform hover:-translate-y-1 transition-all duration-300">
+                        <div className="flex items-start space-x-3 p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50/50 border border-purple-100/50 shadow-sm hover:shadow-md transition-all duration-300">
+                          <div className="flex-shrink-0 p-2.5 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full">
+                            <Calendar className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">Meeting Integration</h4>
+                            <p className="text-gray-600 mt-1">Direct scheduling with MS Teams & Google Meet</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="transform hover:-translate-y-1 transition-all duration-300">
+                        <div className="flex items-start space-x-3 p-4 rounded-xl bg-gradient-to-br from-green-50 to-teal-50/50 border border-green-100/50 shadow-sm hover:shadow-md transition-all duration-300">
+                          <div className="flex-shrink-0 p-2.5 bg-gradient-to-br from-green-500 to-teal-500 rounded-full">
+                            <Mail className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">Meeting Minutes</h4>
+                            <p className="text-gray-600 mt-1">Share MOM via Gmail, Outlook & other platforms</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="transform hover:-translate-y-1 transition-all duration-300">
+                        <div className="flex items-start space-x-3 p-4 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50/50 border border-amber-100/50 shadow-sm hover:shadow-md transition-all duration-300">
+                          <div className="flex-shrink-0 p-2.5 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full">
+                            <Cloud className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">Cloud Storage</h4>
+                            <p className="text-gray-600 mt-1">Sync with Google Drive, OneDrive & Personal Drive</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                image: HTU3,
+                step: "Step 3",
+                title: "AI Bot & OCR",
+                description: "Convert handwriting to digital text with AI assistance. Use AI summarization and smart search for quick access."
+              },
+              {
+                image: HTU4,
+                step: "Step 4",
+                title: "Effortless Erasing",
+                description: "Use the in-built eraser in the pen to undo, and to erase the full page use a wet cloth or tissue."
+              }
+            ].map((item, index) => (
+              <div key={index} className="group relative bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-4 left-4 z-10">
+                  <span className="bg-primary/90 text-white px-4 py-1 rounded-full text-sm font-semibold backdrop-blur-sm">
+                    {item.step}
+                  </span>
+                </div>
+                
+                <div className="p-8">
+                  <h3 className="text-2xl font-bold mb-6 text-gray-900">{item.title}</h3>
+                  {typeof item.description === 'string' ? (
+                    <>
+                      <div className="relative h-[400px] mb-6 group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 rounded-2xl group-hover:scale-110 transition-transform duration-500"></div>
+                        <Image
+                          src={item.image}
+                          alt={item.title}
+                          fill
+                          className="object-contain p-4 group-hover:scale-105 transition-all duration-500"
+                        />
+                      </div>
+                      <p className="text-gray-600 text-lg leading-relaxed">{item.description}</p>
+                    </>
+                  ) : (
+                    item.content
+                  )}
+                </div>
+                
+                {/* Decorative elements */}
+                <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-colors duration-500"></div>
+                <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-colors duration-500"></div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-primary text-primary-foreground">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">
-            Ready to Transform Your Note-Taking?
+      {/* Achievements Section */}
+      <section id="achievements-section" className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+            Achievements speak for itself
           </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Join thousands of satisfied customers and experience the perfect
-            blend of traditional writing and digital organization.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" asChild>
-              <Link href="/products">Shop Now</Link>
-            </Button>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              {
+                image: NorthStarImg,
+                title: "Dubai Expo",
+                desc: "Proudly Exhibited at the Indian Pavilion @ Dubai Expo"
+              },
+              {
+                image: GoogleImg,
+                title: "Google App Scale Academy",
+                desc: "Recognized as India's one of top 100 potential Mobile APP"
+              },
+              {
+                image: MeityImg,
+                title: "MEITY Startup Hub",
+                desc: "Recognized by Ministry of Electronics and Information"
+              },
+              {
+                image: MicrosoftImg,
+                title: "Microsoft",
+                desc: "Part of Microsoft Founder's Hub"
+              },
+              {
+                image: NvidiaImg,
+                title: "NVIDIA",
+                desc: "Inception Program Member"
+              },
+              {
+                image: AICImg,
+                title: "AIC",
+                desc: "Incubated with Atal Innovation Centre"
+              },
+              {
+                image: THubImg,
+                title: "T-Hub",
+                desc: "Incubated with World's Largest Innovation Campus with wide opportunity of Global Reach"
+              }
+            ].map((achievement, index) => (
+              <div 
+                key={index} 
+                className="group relative flex flex-col items-center p-6 rounded-xl bg-white shadow-md hover:shadow-xl transition-all duration-300"
+              >
+                <div className="relative w-32 h-32 mb-4">
+                  <Image
+                    src={achievement.image}
+                    alt={achievement.title}
+                    fill
+                    className="object-contain filter group-hover:brightness-110 transition-all duration-300"
+                  />
+                </div>
+                <h3 className="text-lg font-semibold text-center mb-2">{achievement.title}</h3>
+                <p className="text-sm text-gray-600 text-center">{achievement.desc}</p>
+              </div>
+            ))}
           </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section with Quote */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+            Testimonials
+          </h2>
+          <div className="max-w-4xl mx-auto">
+            <div className="relative p-8 bg-gray-50 rounded-2xl">
+              <svg 
+                className="absolute top-0 left-0 transform -translate-x-3 -translate-y-3 h-8 w-8 text-gray-200" 
+                fill="currentColor" 
+                viewBox="0 0 32 32"
+              >
+                <path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z" />
+              </svg>
+              <div className="relative">
+                <p className="text-lg md:text-xl text-gray-700 italic mb-6">
+                  A big shoutout to ReNoteAI for the wonderful gift and what an awesome product. 
+                  The smart reusable notebook is such a big relief from the overpriced and over 
+                  sensitive gadgets like ipad and remarkable. In less than 24hrs, i am hooked to it. 
+                  A regular writing device which satisfies the exercise needs of my fingers and wrist 
+                  while keeping the mind agile by staying in the writing flow without tech interference.
+                </p>
+                <div className="flex items-center">
+                  <div className="ml-4">
+                    <p className="font-semibold text-gray-900">Amita Vikram Pratap</p>
+                    <p className="text-gray-600">Co Founder – MAV Brand Stories LLC</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+     
+
+      {/* Contact Us Section */}
+      <section id="contact" className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <ContactForm />
         </div>
       </section>
 

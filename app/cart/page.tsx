@@ -7,6 +7,7 @@ import { ShoppingCart, Trash2, ArrowRight, CreditCard, Minus, Plus } from "lucid
 import CartItem from "@/components/cart-item";
 import { useCart } from "@/context/cart-context";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 // Add this helper function before your component return:
 const getEffectivePrice = (item: { id: string; price: number }): number => {
@@ -16,6 +17,7 @@ const getEffectivePrice = (item: { id: string; price: number }): number => {
 };
 
 export default function CartPage() {
+  const router = useRouter();
   const { items, updateItemQuantity, removeItem } = useCart();
 
   // Use the helper function when calculating subtotal:
@@ -23,6 +25,10 @@ export default function CartPage() {
     (total, item) => total + getEffectivePrice(item) * item.quantity,
     0
   );
+
+  const handleProceedToCheckout = () => {
+    router.push("/checkout");
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -64,8 +70,13 @@ export default function CartPage() {
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => updateItemQuantity(item.id, Math.max(1, item.quantity - 1))}
-                    disabled={item.quantity <= 1}
+                    onClick={() => {
+                      if (item.quantity - 1 <= 0) {
+                        removeItem(item.id);
+                      } else {
+                        updateItemQuantity(item.id, item.quantity - 1);
+                      }
+                    }}
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
@@ -100,7 +111,7 @@ export default function CartPage() {
                 <span>₹{subtotal.toFixed(2)}</span>
               </div>
             </div>
-            <Button className="w-full mt-6">Proceed to Checkout</Button>
+            <Button className="w-full mt-6" onClick={handleProceedToCheckout}>Proceed to Checkout</Button>
           </div>
         </div>
       )}

@@ -1,3 +1,4 @@
+// Ensure react-hot-toast is installed: npm install react-hot-toast
 "use client";
 import { useState } from "react";
 import Link from "next/link";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Grid3X3, List } from "lucide-react";
 import { useCart } from "@/context/cart-context";
+import { toast } from "react-hot-toast";
 
 // Import images using next/image
 import AirImg from "../../images/Air.png";
@@ -157,6 +159,17 @@ export default function ProductsPage() {
             : product.price,
         quantity: 1,
         image: product.image,
+      });
+      toast.success(`${product.name} added to cart`, {
+        duration: 2000,
+        position: 'top-center',
+        style: {
+          background: '#4F46E5',
+          color: '#fff',
+          padding: '16px',
+          borderRadius: '8px',
+        },
+        icon: '🛒',
       });
     }
   };
@@ -373,6 +386,17 @@ export default function ProductsPage() {
                       customization: customizationSelections,
                     });
                     setCustomizingProduct(null);
+                    toast.success(`${customizingProduct.name} added to cart`, {
+                      duration: 2000,
+                      position: 'top-center',
+                      style: {
+                        background: '#4F46E5',
+                        color: '#fff',
+                        padding: '16px',
+                        borderRadius: '8px',
+                      },
+                      icon: '🛒',
+                    });
                   }}
                 >
                   Add to Cart
