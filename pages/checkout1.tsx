@@ -28,7 +28,7 @@ function Checkout() {
 				<div>
 					{cart.map(item => (
 						<div key={item.id}>
-							<p>{item.name} - ${item.price}</p>
+							<p>{item.name} - Rs.{item.price}</p>
 							<div>
 								<button onClick={() => handleUpdate(item.id, item.quantity + 1)}>
 									Increase

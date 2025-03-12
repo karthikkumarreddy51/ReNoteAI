@@ -34,6 +34,14 @@ interface ApiError {
   message: string;
 }
 
+// Define interface for shipping rates
+interface ShippingRate {
+  id: string;
+  name: string;
+  price: number;
+  days: string;
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
@@ -54,19 +62,20 @@ export default function CheckoutPage() {
 
   // Calculate totals
   const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  // Updated shipping cost calculation: Express = Rs99, Standard = Rs49, no free delivery
   const shipping =
     shippingMethod === "express"
-      ? 9.99
+      ? 99
       : shippingMethod === "standard"
-      ? 4.99
+      ? 49
       : 0;
   const tax = subtotal * 0.08; // 8% tax rate
   const total = subtotal + shipping + tax;
 
-  const shippingRates = [
-    { id: "standard", name: "Standard Shipping", price: 4.99, days: "3-5" },
-    { id: "express", name: "Express Shipping", price: 9.99, days: "1-2" },
-    { id: "free", name: "Free Shipping", price: 0, days: "5-7", minimum: 50 },
+  // Updated shipping rates without minimum property
+  const shippingRates: ShippingRate[] = [
+    { id: "standard", name: "Standard Shipping", price: 49, days: "3-5" },
+    { id: "express", name: "Express Shipping", price: 99, days: "1-2" },
   ];
 
   const processPayment = async () => {
@@ -299,30 +308,24 @@ export default function CheckoutPage() {
                       key={rate.id}
                       className={`flex items-center justify-between border rounded-md p-4 ${
                         shippingMethod === rate.id ? "border-primary bg-primary/5" : ""
-                      } ${rate.minimum && subtotal < rate.minimum ? "opacity-50 cursor-not-allowed" : ""}`}
+                      }`}
                     >
                       <div className="flex items-start">
                         <RadioGroupItem
                           value={rate.id}
                           id={`shipping-${rate.id}`}
-                          disabled={rate.minimum !== undefined ? subtotal < rate.minimum : false}
                         />
                         <div className="ml-3">
                           <Label htmlFor={`shipping-${rate.id}`} className="font-medium">
                             {rate.name}
                           </Label>
-                          <p className="text-sm text-muted-foreground">Estimated delivery: {rate.days} business days</p>
-                          {rate.minimum && (
-                            <p className="text-xs text-muted-foreground mt-1">Free for orders over ${rate.minimum}</p>
-                          )}
+                          <p className="text-sm text-muted-foreground">
+                            Estimated delivery: {rate.days} business days
+                          </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        {rate.price === 0 ? (
-                          <span className="font-medium text-green-600">Free</span>
-                        ) : (
-                          <span>${rate.price.toFixed(2)}</span>
-                        )}
+                        <span>Rs.{rate.price.toFixed(2)}</span>
                       </div>
                     </div>
                   ))}
@@ -438,12 +441,14 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex-1">
                     <h4 className="text-sm font-medium">{item.name}</h4>
+                    {/* Changed '$' to 'Rs.' */}
                     <p className="text-sm text-muted-foreground">
-                      Qty: {item.quantity} × ${item.price.toFixed(2)}
+                      Qty: {item.quantity} × Rs.{item.price.toFixed(2)}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                    {/* Changed '$' to 'Rs.' */}
+                    <p className="text-sm font-medium">Rs.{(item.price * item.quantity).toFixed(2)}</p>
                   </div>
                 </div>
               ))}
@@ -458,6 +463,7 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
+                {/* Shipping rate display */}
                 <span>{shipping === 0 ? "Free" : `Rs.${shipping.toFixed(2)}`}</span>
               </div>
               <div className="flex justify-between">

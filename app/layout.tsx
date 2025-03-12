@@ -10,17 +10,23 @@ import WhatsAppChat from "@/components/whatsapp-chat"
 import SubscriptionPopup from "@/components/subscription-popup"
 import { SearchProvider } from "@/context/search-context"
 import { Toaster as HotToaster } from "react-hot-toast"
-import Script from 'next/script'
+import Script from "next/script"
+import ReNoteLogo from "../images/ReNoteLogo.jpg"  // Ensure this path is correct
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Smart Reusable Notebooks | Customize Your Own",
+  title: "ReNote AI",
   description:
-    "Design your own custom smart reusable notebook with personalized covers, page layouts, and more. Eco-friendly and innovative.",
+    "Design your own custom smart reusable notebook with personalized covers, page layouts, and more.",
   keywords:
     "smart notebook, reusable notebook, custom notebook, personalized notebook, eco-friendly notebook",
   generator: "v0.dev",
+  icons: {
+    icon: ReNoteLogo.src,      // Uses the imported image's src
+    shortcut: ReNoteLogo.src,
+    apple: ReNoteLogo.src,
+  },
 }
 
 export default function RootLayout({
@@ -31,7 +37,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
-        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="beforeInteractive" />
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="beforeInteractive"
+        />
       </head>
       <body className={inter.className}>
         <CartProvider>
