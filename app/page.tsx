@@ -150,7 +150,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right side (image) with animations */}
+            {/* Right side (image) */}
             <div className="relative h-[500px] md:h-[600px]">
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="relative w-full h-full">
@@ -158,13 +158,13 @@ export default function HomePage() {
                     src={BookWithAppImg}
                     alt="ReNote AI Smart Notebook"
                     fill
-                    className="object-contain animate-hero-float"
+                    className="object-contain"
                     priority
                   />
                   {/* Decorative elements */}
-                  <div className="absolute -inset-2 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-full filter blur-3xl animate-pulse opacity-75"></div>
-                  <div className="absolute top-1/4 -right-12 w-24 h-24 bg-blue-500/20 rounded-full animate-blob"></div>
-                  <div className="absolute bottom-1/4 -left-12 w-24 h-24 bg-indigo-500/20 rounded-full animate-blob animation-delay-2000"></div>
+                  <div className="absolute -inset-2 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-full filter blur-3xl opacity-75"></div>
+                  <div className="absolute top-1/4 -right-12 w-24 h-24 bg-blue-500/20 rounded-full"></div>
+                  <div className="absolute bottom-1/4 -left-12 w-24 h-24 bg-indigo-500/20 rounded-full"></div>
                 </div>
               </div>
             </div>
@@ -380,29 +380,19 @@ export default function HomePage() {
 
                     {/* Interactive Writing Steps */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="transform hover:-translate-y-1 transition-all duration-300">
-                        <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/50 border border-blue-100/50 shadow-sm hover:shadow-md transition-all duration-300">
-                          <div className="text-3xl font-bold text-blue-600 mb-2">1</div>
-                          <h4 className="font-semibold text-gray-900 text-center">Write</h4>
-                          <p className="text-gray-600 mt-1 text-center text-sm">Express your thoughts freely with Pilot Frixion Pens</p>
+                      {['Write', 'Erase', 'Perfect'].map((step, index) => (
+                        <div key={step} className="transform hover:-translate-y-1 transition-all duration-300">
+                          <div className="flex flex-col items-center p-6 h-full rounded-xl bg-gradient-to-br from-green-50 to-green-50/50 border border-green-100/50 shadow-sm hover:shadow-md transition-all duration-300">
+                            <div className="text-3xl font-bold text-green-600 mb-2">{index + 1}</div>
+                            <h4 className="font-semibold text-gray-900 text-center">{step}</h4>
+                            <p className="text-gray-600 mt-1 text-center text-sm">
+                              {step === 'Write' && "Express your thoughts freely with Pilot Frixion Pens"}
+                              {step === 'Erase' && "Mistakes happen - just erase and start again"}
+                              {step === 'Perfect' && "Keep refining until it's just right"}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-
-                      <div className="transform hover:-translate-y-1 transition-all duration-300">
-                        <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50/50 border border-purple-100/50 shadow-sm hover:shadow-md transition-all duration-300">
-                          <div className="text-3xl font-bold text-purple-600 mb-2">2</div>
-                          <h4 className="font-semibold text-gray-900 text-center">Erase</h4>
-                          <p className="text-gray-600 mt-1 text-center text-sm">Mistakes happen - just erase and start again</p>
-                        </div>
-                      </div>
-
-                      <div className="transform hover:-translate-y-1 transition-all duration-300">
-                        <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-green-50 to-teal-50/50 border border-green-100/50 shadow-sm hover:shadow-md transition-all duration-300">
-                          <div className="text-3xl font-bold text-green-600 mb-2">3</div>
-                          <h4 className="font-semibold text-gray-900 text-center">Perfect</h4>
-                          <p className="text-gray-600 mt-1 text-center text-sm">Keep refining until it's just right</p>
-                        </div>
-                      </div>
+                      ))}
                     </div>
 
                     {/* Feature Highlights */}
@@ -445,53 +435,24 @@ export default function HomePage() {
 
                     {/* Features Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="transform hover:-translate-y-1 transition-all duration-300">
-                        <div className="flex items-start space-x-3 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/50 border border-blue-100/50 shadow-sm hover:shadow-md transition-all duration-300">
-                          <div className="flex-shrink-0 p-2.5 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full">
-                            <CheckCircle className="h-5 w-5 text-white" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-900">Task Management</h4>
-                            <p className="text-gray-600 mt-1">Seamless sync with Google Tasks, Apple Reminders & Microsoft To-Do</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="transform hover:-translate-y-1 transition-all duration-300">
-                        <div className="flex items-start space-x-3 p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50/50 border border-purple-100/50 shadow-sm hover:shadow-md transition-all duration-300">
-                          <div className="flex-shrink-0 p-2.5 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full">
-                            <Calendar className="h-5 w-5 text-white" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-900">Meeting Integration</h4>
-                            <p className="text-gray-600 mt-1">Direct scheduling with MS Teams & Google Meet</p>
+                      {[
+                        { icon: <CheckCircle />, title: 'Task Management', desc: 'Seamless sync with Google Tasks, Apple Reminders & Microsoft To-Do' },
+                        { icon: <Calendar />, title: 'Meeting Integration', desc: 'Direct scheduling with MS Teams & Google Meet' },
+                        { icon: <Mail />, title: 'Meeting Minutes', desc: 'Share MOM via Gmail, Outlook & other platforms' },
+                        { icon: <Cloud />, title: 'Cloud Storage', desc: 'Sync with Google Drive, OneDrive & Personal Drive' }
+                      ].map((item, i) => (
+                        <div key={i} className="transform hover:-translate-y-1 transition-all duration-300">
+                          <div className="flex items-start space-x-3 p-6 h-full rounded-xl bg-gradient-to-br from-green-50 to-green-50/50 border border-green-100/50 shadow-sm hover:shadow-md transition-all duration-300">
+                            <div className="flex-shrink-0 p-2.5 bg-gradient-to-br from-green-500 to-green-600 rounded-full">
+                              <div className="h-5 w-5 text-white">{item.icon}</div>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-gray-900">{item.title}</h4>
+                              <p className="text-gray-600 mt-1">{item.desc}</p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-
-                      <div className="transform hover:-translate-y-1 transition-all duration-300">
-                        <div className="flex items-start space-x-3 p-4 rounded-xl bg-gradient-to-br from-green-50 to-teal-50/50 border border-green-100/50 shadow-sm hover:shadow-md transition-all duration-300">
-                          <div className="flex-shrink-0 p-2.5 bg-gradient-to-br from-green-500 to-teal-500 rounded-full">
-                            <Mail className="h-5 w-5 text-white" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-900">Meeting Minutes</h4>
-                            <p className="text-gray-600 mt-1">Share MOM via Gmail, Outlook & other platforms</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="transform hover:-translate-y-1 transition-all duration-300">
-                        <div className="flex items-start space-x-3 p-4 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50/50 border border-amber-100/50 shadow-sm hover:shadow-md transition-all duration-300">
-                          <div className="flex-shrink-0 p-2.5 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full">
-                            <Cloud className="h-5 w-5 text-white" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-900">Cloud Storage</h4>
-                            <p className="text-gray-600 mt-1">Sync with Google Drive, OneDrive & Personal Drive</p>
-                          </div>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
                 ),

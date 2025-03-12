@@ -7,19 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Heart, Star } from "lucide-react";
 import AddToCartButton from "@/components/add-to-cart-button";
-
-// Define a TypeScript interface for the product object
-interface Product {
-  id: string | number;
-  image?: string;
-  name: string;
-  status?: string;
-  description: string;
-  rating: number;
-  reviewCount: number;
-  discountedPrice: number;
-  price: number;
-}
+import { Product } from "@/types/product";
 
 // Update the props type to include an optional onCustomize callback.
 interface ProductCardProps {
@@ -29,6 +17,10 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, onAddToCart, onCustomize }: ProductCardProps) {
+  // Calculate discounted price with default fallback
+  const discountedPrice = product.discountedPrice ?? product.price;
+  const rating = product.rating ?? 0;
+
   return (
     <Card className="overflow-hidden group">
       <div className="relative">
@@ -72,21 +64,21 @@ export default function ProductCard({ product, onAddToCart, onCustomize }: Produ
               <Star
                 key={i}
                 className={`h-4 w-4 ${
-                  i < Math.floor(product.rating)
+                  i < Math.floor(rating)
                     ? "text-yellow-400 fill-yellow-400"
                     : "text-gray-300"
                 }`}
               />
             ))}
           <span className="text-xs text-muted-foreground ml-1">
-            ({product.reviewCount})
+            ({product.reviewCount ?? 0})
           </span>
         </div>
         <div className="flex items-center">
-          {product.discountedPrice < product.price ? (
+          {discountedPrice < product.price ? (
             <>
               <span className="font-bold text-lg">
-                ${product.discountedPrice.toFixed(2)}
+                ${discountedPrice.toFixed(2)}
               </span>
               <span className="text-sm text-muted-foreground line-through ml-2">
                 ${product.price.toFixed(2)}

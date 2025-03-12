@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Grid3X3, List } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation"; // Changed this line
 
 // Import images using next/image
 import AirImg from "../../images/Air.png";
@@ -36,6 +37,36 @@ interface ProductCardProps {
 }
 
 function ProductCard({ product, onAddToCart, onCustomize }: ProductCardProps) {
+  const [quantity, setQuantity] = useState(1);
+  const [isAddedToCart, setIsAddedToCart] = useState(false);
+  const { updateItemQuantity } = useCart();  // Changed from updateCartItemQuantity to updateItemQuantity
+  const router = useRouter();
+
+  const handleQuantityChange = (action: 'increment' | 'decrement') => {
+    setQuantity(prev => {
+      const newQuantity = action === 'increment' ? prev + 1 : prev - 1;
+      if (newQuantity >= 0) {
+        if (isAddedToCart) {
+          const productId = product.id;
+          updateItemQuantity(productId, newQuantity);
+        }
+        if (newQuantity === 0) {
+          setIsAddedToCart(false);
+          setQuantity(1); // Reset to 1 when removing from cart
+          return 0;
+        }
+        return newQuantity;
+      }
+      return prev;
+    });
+  };
+
+  const handleButtonClick = () => {
+    onAddToCart();
+    setQuantity(1); // Ensure quantity is 1 when adding to cart
+    setIsAddedToCart(true);
+  };
+
   return (
     <div className="border p-4 rounded-lg">
       <Link href={`/products/${product.id}`}>
@@ -71,10 +102,34 @@ function ProductCard({ product, onAddToCart, onCustomize }: ProductCardProps) {
       </Link>
       {/* Buttons */}
       <div className="mt-4 flex space-x-2 justify-center">
-        <Button onClick={onAddToCart}>Add to Cart</Button>
-        <Button variant="outline" onClick={onCustomize}>
-          Customize
-        </Button>
+        {isAddedToCart ? (
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handleQuantityChange('decrement')}
+            >
+              -
+            </Button>
+            <span className="w-12 text-center">{quantity}</span>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handleQuantityChange('increment')}
+            >
+              +
+            </Button>
+          </div>
+        ) : (
+          <>
+            <Button onClick={handleButtonClick}>
+              Add to Cart
+            </Button>
+            <Button variant="outline" onClick={onCustomize}>
+              Customize
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -86,6 +141,8 @@ export default function ProductsPage() {
   const [customizingProduct, setCustomizingProduct] = useState<Product | null>(
     null
   );
+  const [quantity, setQuantity] = useState(1); // Add this
+  const [isAddedToCart, setIsAddedToCart] = useState(false); // Add this
   const [customizationSelections, setCustomizationSelections] = useState<{
     coverDesign: string;
     pageLayout: string;
@@ -140,6 +197,17 @@ export default function ProductsPage() {
     },
   ];
 
+  const handleQuantityChange = (action: 'increment' | 'decrement') => {
+    setQuantity(prev => {
+      if (action === 'increment') {
+        return prev + 1;
+      } else if (action === 'decrement' && prev > 1) {
+        return prev - 1;
+      }
+      return prev;
+    });
+  };
+
   const handleAddToCart = (product: Product) => {
     if (product.customizations) {
       setCustomizingProduct(product);
@@ -150,16 +218,18 @@ export default function ProductsPage() {
         bindingType: product.customizations.bindingType[0],
       });
     } else {
+      const productId = product.id;
       addToCart({
-        id: product.id,
+        id: productId,
         name: product.name,
         price:
           product.discountedPrice < product.price
             ? product.discountedPrice
             : product.price,
-        quantity: 1,
+        quantity: quantity,
         image: product.image,
       });
+      setIsAddedToCart(true);
       toast.success(`${product.name} added to cart`, {
         duration: 2000,
         position: 'top-center',
@@ -373,19 +443,21 @@ export default function ProductsPage() {
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
+                    const productId = customizingProduct.id + "-" + Object.values(customizationSelections).join("-");
                     addToCart({
-                      id: customizingProduct.id,
+                      id: productId,
                       name: customizingProduct.name,
                       price:
                         customizingProduct.discountedPrice <
                         customizingProduct.price
                           ? customizingProduct.discountedPrice
                           : customizingProduct.price,
-                      quantity: 1,
+                      quantity: quantity,
                       image: customizingProduct.image,
                       customization: customizationSelections,
                     });
                     setCustomizingProduct(null);
+                    setIsAddedToCart(true);
                     toast.success(`${customizingProduct.name} added to cart`, {
                       duration: 2000,
                       position: 'top-center',

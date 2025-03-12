@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
-  const query = searchParams.get("q") || ""
+  const query = searchParams?.get('q') || ""
   const { searchQuery, setSearchQuery, searchResults, setSearchResults, isSearching, setIsSearching } = useSearch()
 
   useEffect(() => {

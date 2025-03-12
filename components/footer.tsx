@@ -10,6 +10,7 @@ import {
   Linkedin,
   X,
   Smartphone,
+  Youtube,
 } from "lucide-react";
 
 export default function Footer() {
@@ -50,48 +51,50 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 2: Follow Us -- moved further right */}
+          {/* Column 2: Follow Us */}
           <div className="md:ml-12">
             <h3 className="text-lg font-bold mb-4">Follow Us</h3>
-            <div className="flex flex-col gap-4">
-              {/* LinkedIn and Instagram row */}
-              <div className="flex gap-4">
-                <Link
-                  href="https://www.linkedin.com/company/renoteai/posts/?feedView=all"
-                  className="text-muted-foreground hover:text-primary"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Linkedin className="h-5 w-5" />
-                </Link>
-                <Link
-                  href="https://www.instagram.com/renote.ai"
-                  className="text-muted-foreground hover:text-primary"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Instagram className="h-5 w-5" />
-                </Link>
-              </div>
-              {/* Facebook and Twitter row */}
-              <div className="flex gap-4">
-                <Link
-                  href="https://www.facebook.com/people/ReNote-AI/61568234070306/"
-                  className="text-muted-foreground hover:text-primary"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Facebook className="h-5 w-5" />
-                </Link>
-                <Link
-                  href="https://x.com/ReNote_AI"
-                  className="text-muted-foreground hover:text-primary"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <X className="h-5 w-5" />
-                </Link>
-              </div>
+            <div className="flex gap-4">
+              <Link
+                href="https://www.linkedin.com/company/renoteai/posts/?feedView=all"
+                className="text-muted-foreground hover:text-primary"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Linkedin className="h-5 w-5" />
+              </Link>
+              <Link
+                href="https://www.instagram.com/renote.ai"
+                className="text-muted-foreground hover:text-primary"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Instagram className="h-5 w-5" />
+              </Link>
+              <Link
+                href="https://www.facebook.com/people/ReNote-AI/61568234070306/"
+                className="text-muted-foreground hover:text-primary"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Facebook className="h-5 w-5" />
+              </Link>
+              <Link
+                href="https://x.com/ReNote_AI"
+                className="text-muted-foreground hover:text-primary"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <X className="h-5 w-5" />
+              </Link>
+              <Link
+                href="https://www.youtube.com/@ReNoteAI"
+                className="text-muted-foreground hover:text-primary"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Youtube className="h-5 w-5" />
+              </Link>
             </div>
           </div>
 

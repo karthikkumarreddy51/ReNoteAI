@@ -19,24 +19,30 @@ export default function SubscriptionPopup() {
   const [email, setEmail] = useState("")
 
   useEffect(() => {
-    // Open the popup 5 seconds after the website loads
-    const timer = setTimeout(() => {
-      setIsOpen(true)
-    }, 5000)
-    return () => clearTimeout(timer)
+    if (!localStorage.getItem("subscriptionPopupShown")) {
+      const timer = setTimeout(() => {
+        setIsOpen(true)
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
   }, [])
 
   function handleSubscribe(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     e.stopPropagation() // Prevent additional click events from propagating
     console.log("Subscribed with email:", email)
-    localStorage.setItem("subscribed", "true")
+    localStorage.setItem("subscriptionPopupShown", "true")
     // Use a short timeout to let any pending events finish before closing
     setTimeout(() => setIsOpen(false), 0)
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      setIsOpen(open)
+      if (!open) {
+        localStorage.setItem("subscriptionPopupShown", "true")
+      }
+    }}>
       <DialogPortal>
         <DialogOverlay className="fixed inset-0 bg-transparent" />
         <DialogContent className="sm:max-w-md">

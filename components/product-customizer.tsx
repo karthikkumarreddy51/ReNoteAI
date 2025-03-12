@@ -13,48 +13,80 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Info, Upload, Check } from "lucide-react"
 import AddToCartButton from "@/components/add-to-cart-button"
 
-export default function ProductCustomizer({ product, options, accessories }) {
-  const [customization, setCustomization] = useState({
+// Add type definitions
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  discountedPrice?: number;
+  image?: string;
+}
+
+interface Options {
+  coverColors: string[];
+  pageLayouts: string[];
+  paperTypes: string[];
+  bindingTypes: string[];
+}
+
+interface Accessory {
+  id: string;
+  name: string;
+  price: number;
+}
+
+interface Customization {
+  coverColor: string;
+  pageLayout: string;
+  paperType: string;
+  bindingType: string;
+  name: string;
+  logo: string | null;
+  selectedAccessories: string[];
+}
+
+// Type the component props
+export default function ProductCustomizer({ product, options, accessories }: { product: Product, options: Options, accessories: Accessory[] }) {
+  const [customization, setCustomization] = useState<Customization>({
     coverColor: options.coverColors[0],
     pageLayout: options.pageLayouts[0],
     paperType: options.paperTypes[0],
     bindingType: options.bindingTypes[0],
     name: "",
     logo: null,
-    selectedAccessories: [],
+    selectedAccessories: []
   })
 
   const [customizationStep, setCustomizationStep] = useState("options")
   const [showPreview, setShowPreview] = useState(false)
 
-  const handleOptionChange = (option, value) => {
+  // Specify types for parameters
+  const handleOptionChange = (option: keyof Customization, value: string): void => {
     setCustomization({
       ...customization,
       [option]: value,
     })
   }
 
-  const handleNameChange = (e) => {
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setCustomization({
       ...customization,
       name: e.target.value,
     })
   }
 
-  const handleLogoUpload = (e) => {
-    const file = e.target.files[0]
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const file = e.target.files && e.target.files[0]
     if (file) {
-      // In a real app, you would upload this to your server or cloud storage
-      // For now, we'll just create a local URL
       const logoUrl = URL.createObjectURL(file)
       setCustomization({
         ...customization,
-        logo: logoUrl,
+        logo: logoUrl
       })
     }
   }
 
-  const handleAccessoryToggle = (accessoryId) => {
+  const handleAccessoryToggle = (accessoryId: string): void => {
     setCustomization({
       ...customization,
       selectedAccessories: customization.selectedAccessories.includes(accessoryId)
@@ -83,18 +115,14 @@ export default function ProductCustomizer({ product, options, accessories }) {
     }
   }
 
-  // Calculate the total price including customizations and accessories
   const calculateTotalPrice = () => {
     let total = product.discountedPrice || product.price
-
-    // Add price for accessories
-    customization.selectedAccessories.forEach((accessoryId) => {
-      const accessory = accessories.find((a) => a.id === accessoryId)
+    customization.selectedAccessories.forEach((accessoryId: string) => {
+      const accessory = accessories.find((a: Accessory) => a.id === accessoryId)
       if (accessory) {
         total += accessory.price
       }
     })
-
     return total
   }
 
@@ -113,7 +141,7 @@ export default function ProductCustomizer({ product, options, accessories }) {
           <div>
             <Label className="block mb-2">Cover Color</Label>
             <div className="flex flex-wrap gap-2">
-              {options.coverColors.map((color) => (
+              {options.coverColors.map((color: string) => (
                 <TooltipProvider key={color}>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -146,10 +174,10 @@ export default function ProductCustomizer({ product, options, accessories }) {
             <Label className="block mb-2">Page Layout</Label>
             <RadioGroup
               value={customization.pageLayout}
-              onValueChange={(value) => handleOptionChange("pageLayout", value)}
+              onValueChange={(layout: string) => handleOptionChange("pageLayout", layout)}
               className="grid grid-cols-2 gap-2"
             >
-              {options.pageLayouts.map((layout) => (
+              {options.pageLayouts.map((layout: string) => (
                 <div key={layout} className="flex items-center space-x-2 border rounded-md p-3">
                   <RadioGroupItem value={layout} id={`layout-${layout}`} />
                   <Label htmlFor={`layout-${layout}`} className="flex items-center">
@@ -171,10 +199,10 @@ export default function ProductCustomizer({ product, options, accessories }) {
             <Label className="block mb-2">Paper Type</Label>
             <RadioGroup
               value={customization.paperType}
-              onValueChange={(value) => handleOptionChange("paperType", value)}
+              onValueChange={(type: string) => handleOptionChange("paperType", type)}
               className="grid grid-cols-2 gap-2"
             >
-              {options.paperTypes.map((type) => (
+              {options.paperTypes.map((type: string) => (
                 <div key={type} className="flex items-center space-x-2 border rounded-md p-3">
                   <RadioGroupItem value={type} id={`paper-${type}`} />
                   <Label htmlFor={`paper-${type}`}>{type}</Label>
@@ -187,10 +215,10 @@ export default function ProductCustomizer({ product, options, accessories }) {
             <Label className="block mb-2">Binding Type</Label>
             <RadioGroup
               value={customization.bindingType}
-              onValueChange={(value) => handleOptionChange("bindingType", value)}
+              onValueChange={(type: string) => handleOptionChange("bindingType", type)}
               className="grid grid-cols-2 gap-2"
             >
-              {options.bindingTypes.map((type) => (
+              {options.bindingTypes.map((type: string) => (
                 <div key={type} className="flex items-center space-x-2 border rounded-md p-3">
                   <RadioGroupItem value={type} id={`binding-${type}`} />
                   <Label htmlFor={`binding-${type}`}>{type}</Label>
@@ -290,7 +318,7 @@ export default function ProductCustomizer({ product, options, accessories }) {
           <div>
             <Label className="block mb-2">Add Accessories</Label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {accessories.map((accessory) => (
+              {accessories.map((accessory: Accessory) => (
                 <div key={accessory.id} className="flex items-start space-x-2 border rounded-md p-3">
                   <Checkbox
                     id={`accessory-${accessory.id}`}
@@ -374,8 +402,8 @@ export default function ProductCustomizer({ product, options, accessories }) {
                   <div className="font-medium">Accessories:</div>
                   <div>
                     {accessories
-                      .filter((a) => customization.selectedAccessories.includes(a.id))
-                      .map((a) => a.name)
+                      .filter((a: Accessory) => customization.selectedAccessories.includes(a.id))
+                      .map((a: Accessory) => a.name)
                       .join(", ")}
                   </div>
                 </>

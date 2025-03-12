@@ -116,8 +116,11 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const product = products.find(
     (p) => p.id.toLowerCase() === id.toLowerCase()
   );
-  const { addToCart } = useCart();
+  const { addToCart, updateItemQuantity } = useCart();
   const router = useRouter();
+  const [isInCart, setIsInCart] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [isAddedToCart, setIsAddedToCart] = useState(false);
 
   if (!product) {
     return <div className="container mx-auto p-8">Product not found.</div>;
@@ -151,6 +154,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     if (product.customizations) {
       setShowCustomizationModal(true);
     } else {
+      setQuantity(1); // Ensure quantity is 1 when adding to cart
       addProductToCart();
     }
   };
@@ -160,15 +164,17 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       product.discountedPrice < product.price
         ? product.discountedPrice
         : product.price;
+    const productId = product.id + "-" + Object.values(selectedCustomization).join("-");
 
     addToCart({
-      id: product.id,
+      id: productId,
       name: product.name,
       price: priceToUse,
-      quantity: 1,
+      quantity: quantity,
       image: product.image,
       customization: selectedCustomization,
     });
+    setIsAddedToCart(true);
     
     // Add success toast if not showing customization modal
     if (!product.customizations) {
@@ -189,6 +195,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const confirmAddToCart = () => {
     addProductToCart();
     setShowCustomizationModal(false);
+    setIsInCart(true);
     toast.success(`${product.name} added to cart`, {
       duration: 2000,
       position: 'top-center',
@@ -199,6 +206,25 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         borderRadius: '8px',
       },
       icon: '🛒',
+    });
+  };
+
+  const handleQuantityChange = (action: 'increment' | 'decrement') => {
+    setQuantity(prev => {
+      const newQuantity = action === 'increment' ? prev + 1 : prev - 1;
+      if (newQuantity >= 0) {
+        if (isAddedToCart) {
+          const productId = product.id + "-" + Object.values(selectedCustomization).join("-");
+          updateItemQuantity(productId, newQuantity);
+        }
+        if (newQuantity === 0) {
+          setIsAddedToCart(false);
+          setQuantity(1); // Reset to 1 when removing from cart
+          return 0;
+        }
+        return newQuantity;
+      }
+      return prev;
     });
   };
 
@@ -603,9 +629,37 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           </div>
           {/* Add to Cart Button */}
           <div className="mt-4">
-            <Button onClick={handleAddToCart} className="w-full">
-              Add to Cart
-            </Button>
+            {isAddedToCart ? (
+              <div className="flex items-center justify-center gap-4">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    handleQuantityChange('decrement');
+                    if (quantity === 1) {
+                      setIsAddedToCart(false);
+                    }
+                  }}
+                >
+                  -
+                </Button>
+                <span className="w-12 text-center">{quantity}</span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleQuantityChange('increment')}
+                >
+                  +
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                onClick={handleAddToCart} 
+                className="w-full"
+              >
+                Add to Cart
+              </Button>
+            )}
           </div>
         </div>
 

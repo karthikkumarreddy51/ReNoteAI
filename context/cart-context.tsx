@@ -10,14 +10,14 @@ interface CartContextType {
   clearCart: () => void;
   total: number;
   itemCount: number;
-  items: CartItem[]; // Add this line
-  removeItem: (id: string) => void; // Add this line
-  updateItemQuantity: (id: string, quantity: number) => void; // Add this line
+  items: CartItem[];
+  removeItem: (id: string) => void;
+  updateItemQuantity: (id: string, quantity: number) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
+export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -92,9 +92,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       clearCart,
       total,
       itemCount,
-      items: cart, // Add this line
-      removeItem, // Add this line
-      updateItemQuantity // Add this line
+      items: cart,
+      removeItem,
+      updateItemQuantity
     }}>
       {children}
     </CartContext.Provider>
@@ -109,4 +109,4 @@ export const useCart = () => {
   return context;
 };
 
-export type { CartItem, CartContextType }; // Export the types
+export type { CartItem, CartContextType };
