@@ -1,3 +1,4 @@
+'use client';
 // Ensure react-hot-toast is installed: npm install react-hot-toast
 "use client";
 import React, { useRef, useState } from "react";

@@ -48,7 +48,6 @@ export default function RootLayout({
               }}
             />
             <WhatsAppChat />
-            {/* Render the subscription popup only once in the RootLayout */}
             <SubscriptionPopup />
           </SearchProvider>
         </CartProvider>
