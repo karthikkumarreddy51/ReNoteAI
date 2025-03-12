@@ -14,6 +14,8 @@ import { ArrowLeft, CreditCard, Truck, Shield } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
+import PaymentCard from "@/components/PaymentCard";
 
 /* Move ambient declaration to top level */
 declare global {
@@ -22,12 +24,33 @@ declare global {
   }
 }
 
+// Add interface for API error response
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message: string;
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [shippingMethod, setShippingMethod] = useState("standard");
   const [isProcessing, setIsProcessing] = useState(false);
   const { cart, clearCart } = useCart();
+  const [shippingDetails, setShippingDetails] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+    country: 'IN'
+  });
 
   // Calculate totals
   const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -49,45 +72,130 @@ export default function CheckoutPage() {
   const processPayment = async () => {
     setIsProcessing(true);
     try {
-      const order = await axios.post("/api/razorpay", { amount: total * 100, currency: "INR" });
+      const amountInPaise = Math.round(total * 100);
+      
+      if (isNaN(amountInPaise) || amountInPaise <= 0) {
+        throw new Error('Invalid amount');
+      }
+
+      const { data } = await axios.post('/api/razorpay', {
+        amount: amountInPaise
+      });
+
+      if (!data?.orderId || !data?.keyId) {
+        throw new Error('Invalid order response');
+      }
+
       const options = {
-        key: process.env.RAZORPAY_KEY_ID,
-        amount: order.data.amount,
-        currency: order.data.currency,
+        key: data.keyId,
+        amount: data.amount,
+        currency: data.currency,
         name: "ReNote AI",
         description: "Smart Notebook Purchase",
-        order_id: order.data.id,
-        handler: async (response: any) => {  // <-- explicit any type added here
-          await axios.post("/api/createOrder", {
-            products: cart,
-            totalAmount: total,
-            shippingAddress: {
-              // Add shipping address details here
-            },
-          });
-          clearCart();
-          router.push("/checkout/success");
-        },
+        order_id: data.orderId,
         prefill: {
-          name: "Customer Name",
-          email: "customer@example.com",
-          contact: "9999999999",
+          name: `${shippingDetails.firstName} ${shippingDetails.lastName}`,
+          email: shippingDetails.email,
+          contact: shippingDetails.phone
         },
-        notes: { address: "Customer Address" },
-        theme: { color: "#3399cc" },
+        handler: async function(response: any) {
+          try {
+            // Handle successful payment
+            const confirmResponse = await axios.post('/api/payment-success', {
+              paymentDetails: response,
+              orderDetails: {
+                items: cart,
+                amount: total
+              },
+              shippingDetails
+            });
+
+            if (confirmResponse.data.success) {
+              clearCart();
+              toast.success('Payment successful! Your order has been placed.', {
+                duration: 5000,
+                position: 'top-center',
+                style: {
+                  background: '#10B981',
+                  color: '#fff',
+                }
+              });
+              router.push('/checkout/success');
+            }
+          } catch (error) {
+            handlePaymentError(error);
+          } finally {
+            setIsProcessing(false); // Ensure processing state is reset
+          }
+        },
+        modal: {
+          ondismiss: function() {
+            setIsProcessing(false); // Reset processing state when modal is closed
+            toast.error('Payment cancelled. Please try again.', {
+              duration: 3000,
+              position: 'top-center',
+              style: {
+                background: '#EF4444',
+                color: '#fff',
+              }
+            });
+          },
+          escape: true,
+          confirm_close: true
+        },
+        retry: {
+          enabled: false
+        }
       };
+
       const rzp = new window.Razorpay(options);
+      
+      rzp.on('payment.failed', function(resp: any) {
+        console.error('Payment failed:', resp.error);
+        setIsProcessing(false); // Reset processing state on failure
+        toast.error('Payment failed. Please try again.', {
+          duration: 3000,
+          position: 'top-center',
+          style: {
+            background: '#EF4444',
+            color: '#fff',
+          }
+        });
+      });
+
       rzp.open();
-    } catch (error) {
-      console.error("Payment processing failed", error);
-    } finally {
-      setIsProcessing(false);
+    } catch (error: any) {
+      handlePaymentError(error);
+      setIsProcessing(false); // Reset processing state on error
     }
+  };
+
+  const handlePaymentError = (error: any) => {
+    console.error('Payment Error:', error);
+    setIsProcessing(false); // Reset processing state
+    const errorMessage = error.response?.data?.error || error.message || 'Payment failed';
+    toast.error(errorMessage, {
+      duration: 3000,
+      position: 'top-center',
+      style: {
+        background: '#EF4444',
+        color: '#fff',
+      }
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     await processPayment();
+  };
+
+  // Update shipping details handler
+  const handleShippingDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setShippingDetails(prev => ({
+      ...prev,
+      [id]: value
+    }));
   };
 
   return (
@@ -111,11 +219,11 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" required className="mt-1" />
+                    <Input id="email" type="email" required className="mt-1" onChange={handleShippingDetailsChange} />
                   </div>
                   <div>
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" type="tel" required className="mt-1" />
+                    <Input id="phone" type="tel" required className="mt-1" onChange={handleShippingDetailsChange} />
                   </div>
                 </div>
               </div>
@@ -126,39 +234,48 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" required className="mt-1" />
+                    <Input id="firstName" required className="mt-1" onChange={handleShippingDetailsChange} />
                   </div>
                   <div>
                     <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" required className="mt-1" />
+                    <Input id="lastName" required className="mt-1" onChange={handleShippingDetailsChange} />
                   </div>
                   <div className="md:col-span-2">
                     <Label htmlFor="address">Street Address</Label>
-                    <Input id="address" required className="mt-1" />
+                    <Input id="address" required className="mt-1" onChange={handleShippingDetailsChange} />
                   </div>
                   <div>
                     <Label htmlFor="city">City</Label>
-                    <Input id="city" required className="mt-1" />
+                    <Input id="city" required className="mt-1" onChange={handleShippingDetailsChange} />
                   </div>
                   <div>
                     <Label htmlFor="state">State / Province</Label>
-                    <Input id="state" required className="mt-1" />
+                    <Input id="state" required className="mt-1" onChange={handleShippingDetailsChange} />
                   </div>
                   <div>
                     <Label htmlFor="zip">ZIP / Postal Code</Label>
-                    <Input id="zip" required className="mt-1" />
+                    <Input id="zip" required className="mt-1" onChange={handleShippingDetailsChange} />
                   </div>
                   <div>
                     <Label htmlFor="country">Country</Label>
-                    <Select defaultValue="us">
+                    <Select defaultValue="IN">
                       <SelectTrigger id="country" className="mt-1">
                         <SelectValue placeholder="Select country" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="us">United States</SelectItem>
-                        <SelectItem value="ca">Canada</SelectItem>
-                        <SelectItem value="uk">United Kingdom</SelectItem>
-                        <SelectItem value="au">Australia</SelectItem>
+                        <SelectItem value="IN">India</SelectItem>
+                        <SelectItem value="US">United States</SelectItem>
+                        <SelectItem value="CA">Canada</SelectItem>
+                        <SelectItem value="UK">United Kingdom</SelectItem>
+                        <SelectItem value="AU">Australia</SelectItem>
+                        <SelectItem value="DE">Germany</SelectItem>
+                        <SelectItem value="FR">France</SelectItem>
+                        <SelectItem value="JP">Japan</SelectItem>
+                        <SelectItem value="CN">China</SelectItem>
+                        <SelectItem value="BR">Brazil</SelectItem>
+                        <SelectItem value="RU">Russia</SelectItem>
+                        <SelectItem value="ZA">South Africa</SelectItem>
+                        {/* ...add any additional countries as needed... */}
                       </SelectContent>
                     </Select>
                   </div>
@@ -246,19 +363,9 @@ export default function CheckoutPage() {
                       <CreditCard className="h-12 w-12 mx-auto text-primary mb-4" />
                       <p className="mb-4">You will be redirected to Razorpay to complete your payment securely.</p>
                       <div className="flex justify-center space-x-2">
-                        <Image src="/placeholder.svg?height=30&width=50&text=Visa" alt="Visa" width={50} height={30} />
-                        <Image
-                          src="/placeholder.svg?height=30&width=50&text=MC"
-                          alt="Mastercard"
-                          width={50}
-                          height={30}
-                        />
-                        <Image
-                          src="/placeholder.svg?height=30&width=50&text=Amex"
-                          alt="American Express"
-                          width={50}
-                          height={30}
-                        />
+                        <PaymentCard type="Visa" />
+                        <PaymentCard type="MC" />
+                        <PaymentCard type="Amex" />
                       </div>
                     </div>
                   </TabsContent>

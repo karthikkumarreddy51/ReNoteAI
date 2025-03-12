@@ -565,14 +565,13 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Back to Products */}
       <Link href="/products">
         <Button variant="ghost">← Back to Products</Button>
       </Link>
 
-      <div className="mt-8 flex flex-col md:flex-row gap-8 relative">
+      <div className="mt-8 flex flex-col md:flex-row gap-8 relative min-h-screen">
         {/* LEFT SECTION: Thumbnails, Main Image, and Cart */}
-        <div className="md:w-3/5 flex flex-col" style={{ maxHeight: "800px" }}>
+        <div className="md:w-3/5 flex flex-col sticky top-8" style={{ height: 'fit-content' }}>
           <div className="flex flex-row">
             {/* Thumbnails Column */}
             <div
@@ -664,10 +663,10 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         </div>
 
         {/* RIGHT SECTION: Product Details or Zoom View */}
-        <div className="md:w-2/5 h-[800px] overflow-y-auto pr-4 custom-scrollbar">
+        <div className="md:w-2/5">
           {isZoomActive ? (
             <div
-              className="w-full h-full border rounded-lg transition-all duration-200"
+              className="w-full h-[600px] border rounded-lg transition-all duration-200 sticky top-8"
               style={{
                 backgroundImage: `url(${galleryImages[selectedImage]})`,
                 backgroundRepeat: "no-repeat",
@@ -676,9 +675,9 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
               }}
             ></div>
           ) : (
-            <>
-              <h1 className="text-2xl font-bold mb-2">{productTitle}</h1>
-              <div className="flex items-center mb-6">
+            <div className="space-y-6">
+              <h1 className="text-2xl font-bold">{productTitle}</h1>
+              <div className="flex items-center">
                 <span className="text-2xl font-semibold text-black">
                   ₹{product.discountedPrice.toFixed(2)}
                 </span>
@@ -687,7 +686,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 </span>
               </div>
               {productFeatures}
-            </>
+            </div>
           )}
         </div>
       </div>
