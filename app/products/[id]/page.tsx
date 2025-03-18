@@ -1,13 +1,14 @@
 'use client';
 // Ensure react-hot-toast is installed: npm install react-hot-toast
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cart-context";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { CheckCircle } from "lucide-react"; // Add this import at the top with other imports
 
 // Main images
 import AirImg from "../../../images/Air.png";
@@ -112,22 +113,76 @@ interface ProductDetailPageProps {
   };
 }
 
+const clamp = (value: number, min: number, max: number): number =>
+  Math.max(min, Math.min(max, value));
+
+const isInImageBounds = (x: number, y: number, rect: DOMRect): boolean => {
+  return x >= 0 && x <= rect.width && y >= 0 && y <= rect.height;
+};
+
+const calculateZoomPosition = (
+  x: number, 
+  y: number, 
+  rect: DOMRect
+): { x: number; y: number } | null => {
+  // Calculate percentages with full range
+  const xPercent = Math.round((x / rect.width) * 100);
+  const yPercent = Math.round((y / rect.height) * 100);
+  
+  // Return null if cursor is outside the image bounds
+  if (xPercent < 0 || xPercent > 100 || yPercent < 0 || yPercent > 100) {
+    return null;
+  }
+
+  // Allow full range of motion (0-100%)
+  return { x: xPercent, y: yPercent };
+};
+
+const ZOOM_MAGNIFICATION = 2.5;
+const THROTTLE_MS = 16;
+
+// Throttle helper function
+function throttle<T extends (...args: any[]) => any>(
+  func: T,
+  limit: number
+): (...args: Parameters<T>) => void {
+  let inThrottle: boolean = false;
+  return function(this: any, ...args: Parameters<T>) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+}
+
 export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { id } = params;
-  const product = products.find(
-    (p) => p.id.toLowerCase() === id.toLowerCase()
-  );
-  const { addToCart, updateItemQuantity } = useCart();
   const router = useRouter();
+  const product = products.find((p) => p.id.toLowerCase() === id.toLowerCase());
+
+  // Early return if no product found
+  if (!product) {
+    return (
+      <div className="container mx-auto p-8 text-center">
+        <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+        <p className="text-gray-600 mb-8">The product you're looking for doesn't exist.</p>
+        <Button asChild>
+          <Link href="/products">Back to Products</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  // All state declarations moved to top
+  const { addToCart, updateItemQuantity } = useCart();
   const [isInCart, setIsInCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
-
-  if (!product) {
-    return <div className="container mx-auto p-8">Product not found.</div>;
-  }
-
-  // Customization Modal state
+  const [isZooming, setIsZooming] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<number>(0);
+  const [progress, setProgress] = useState(0);
   const [showCustomizationModal, setShowCustomizationModal] = useState(false);
   const [selectedCustomization, setSelectedCustomization] = useState(() => ({
     coverDesign: product.customizations?.coverDesign[0] || "",
@@ -136,102 +191,18 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     bindingType: product.customizations?.bindingType[0] || "",
   }));
 
-  let galleryImages: string[] = [];
+  // Refs
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const zoomViewRef = useRef<HTMLDivElement>(null);
+  const zoomPositionRef = useRef({ x: 50, y: 50 });
+
+  // Gallery and content setup
+  const galleryImages: string[] = [];
   let productTitle: string = "";
   let productFeatures: JSX.Element | null = null;
-  const [selectedImage, setSelectedImage] = useState<number>(0);
 
-  const imageContainerRef = useRef<HTMLDivElement>(null);
-
-  // Zoom state for main image
-  const [isZoomActive, setIsZoomActive] = useState(false);
-  const [zoomPos, setZoomPos] = useState({
-    backgroundX: "0%",
-    backgroundY: "0%",
-  });
-
-  // Handlers for Add to Cart
-  const handleAddToCart = () => {
-    if (product.customizations) {
-      setShowCustomizationModal(true);
-    } else {
-      setQuantity(1); // Ensure quantity is 1 when adding to cart
-      addProductToCart();
-    }
-  };
-
-  const addProductToCart = () => {
-    const priceToUse =
-      product.discountedPrice < product.price
-        ? product.discountedPrice
-        : product.price;
-    const productId = product.id + "-" + Object.values(selectedCustomization).join("-");
-
-    addToCart({
-      id: productId,
-      name: product.name,
-      price: priceToUse,
-      quantity: quantity,
-      image: product.image,
-      customization: selectedCustomization,
-    });
-    setIsAddedToCart(true);
-    
-    // Add success toast if not showing customization modal
-    if (!product.customizations) {
-      toast.success(`${product.name} added to cart`, {
-        duration: 2000,
-        position: 'top-center',
-        style: {
-          background: '#4F46E5',
-          color: '#fff',
-          padding: '16px',
-          borderRadius: '8px',
-        },
-        icon: '🛒',
-      });
-    }
-  };
-
-  const confirmAddToCart = () => {
-    addProductToCart();
-    setShowCustomizationModal(false);
-    setIsInCart(true);
-    toast.success(`${product.name} added to cart`, {
-      duration: 2000,
-      position: 'top-center',
-      style: {
-        background: '#4F46E5',
-        color: '#fff',
-        padding: '16px',
-        borderRadius: '8px',
-      },
-      icon: '🛒',
-    });
-  };
-
-  const handleQuantityChange = (action: 'increment' | 'decrement') => {
-    setQuantity(prev => {
-      const newQuantity = action === 'increment' ? prev + 1 : prev - 1;
-      if (newQuantity >= 0) {
-        if (isAddedToCart) {
-          const productId = product.id + "-" + Object.values(selectedCustomization).join("-");
-          updateItemQuantity(productId, newQuantity);
-        }
-        if (newQuantity === 0) {
-          setIsAddedToCart(false);
-          setQuantity(1); // Reset to 1 when removing from cart
-          return 0;
-        }
-        return newQuantity;
-      }
-      return prev;
-    });
-  };
-
-  // Set gallery images and content based on product type
   if (product.id.toLowerCase() === "air") {
-    galleryImages = [
+    galleryImages.push(
       AirImg.src,
       AirGallery2.src,
       AirGallery3.src,
@@ -241,7 +212,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       AirGallery7.src,
       AirGallery8.src,
       AirGallery9.src,
-    ];
+    );
     productTitle =
       "ReNote AI Air – AI-Powered Smart Reusable Notebook with Smart Templates & AI Assistance";
     productFeatures = (
@@ -339,7 +310,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       </>
     );
   } else if (product.id.toLowerCase() === "classic") {
-    galleryImages = [
+    galleryImages.push(
       ClassicImg.src,
       ClassicGallery2.src,
       ClassicGallery3.src,
@@ -349,7 +320,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       ClassicGallery7.src,
       ClassicGallery8.src,
       ClassicGallery9.src,
-    ];
+    );
     productTitle =
       "ReNote AI Classic – AI-Powered Smart Reusable Notebook with Smart Templates & AI Assistance";
     productFeatures = (
@@ -455,7 +426,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     );
   } else {
     // Eco
-    galleryImages = [
+    galleryImages.push(
       EcoImg.src,
       EcoGallery3.src,
       EcoGallery4.src,
@@ -464,7 +435,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       EcoGallery7.src,
       EcoGallery8.src,
       EcoGallery9.src,
-    ];
+    );
     productTitle =
       "ReNote AI Eco – Sustainable Smart Notebook with Smart Templates & AI Assistance";
     productFeatures = (
@@ -564,6 +535,147 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     );
   }
 
+  // Effects
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (!isHovering) {
+      timer = setInterval(() => {
+        setSelectedImage((prev: number) => (prev + 1) % galleryImages.length);
+      }, 10000);
+    }
+    return () => clearInterval(timer);
+  }, [galleryImages.length, isHovering]);
+
+  useEffect(() => {
+    let progressTimer: NodeJS.Timeout;
+    if (!isHovering) {
+      progressTimer = setInterval(() => {
+        setProgress((prev: number) => (prev + 1) % 100);
+      }, 100);
+    }
+    return () => clearInterval(progressTimer);
+  }, [selectedImage, isHovering]);
+
+  // Reset progress when image changes
+  useEffect(() => {
+    setProgress(0);
+  }, [selectedImage]);
+
+  // Handlers
+  const handleAddToCart = () => {
+    if (product.customizations) {
+      setShowCustomizationModal(true);
+    } else {
+      setQuantity(1);
+      addProductToCart();
+    }
+  };
+
+  const addProductToCart = () => {
+    const priceToUse = product.discountedPrice < product.price ? product.discountedPrice : product.price;
+    const productId = `${product.id}-${Object.values(selectedCustomization).join("-")}`;
+
+    addToCart({
+      id: productId,
+      name: product.name,
+      price: priceToUse,
+      quantity,
+      image: product.image,
+      customization: selectedCustomization,
+    });
+    setIsAddedToCart(true);
+    
+    if (!product.customizations) {
+      toast.success(`${product.name} added to cart`, {
+        duration: 2000,
+        position: 'top-center',
+        style: {
+          background: '#4F46E5',
+          color: '#fff',
+          padding: '16px',
+          borderRadius: '8px',
+        },
+        icon: '🛒',
+      });
+    }
+  };
+
+  const handleQuantityChange = (action: 'increment' | 'decrement') => {
+    setQuantity((prev: number) => {
+      const newQuantity = action === 'increment' ? prev + 1 : prev - 1;
+      if (newQuantity >= 0) {
+        if (isAddedToCart) {
+          const productId = `${product.id}-${Object.values(selectedCustomization).join("-")}`;
+          updateItemQuantity(productId, newQuantity);
+        }
+        if (newQuantity === 0) {
+          setIsAddedToCart(false);
+          setQuantity(1);
+          return 0;
+        }
+        return newQuantity;
+      }
+      return prev;
+    });
+  };
+
+  const handleBuyNow = () => {
+    const priceToUse = product.discountedPrice < product.price ? product.discountedPrice : product.price;
+    const productId = `${product.id}-${Object.values(selectedCustomization).join("-")}`;
+    
+    addToCart({
+      id: productId,
+      name: product.name,
+      price: priceToUse,
+      quantity: 1,
+      image: product.image,
+      customization: selectedCustomization,
+    });
+    
+    router.push("/checkout");
+  };
+
+  // Add handleZoom function
+  const handleZoom = useCallback(
+    throttle((e: React.MouseEvent<HTMLDivElement>) => {
+      const container = imageContainerRef.current;
+      const zoomView = zoomViewRef.current;
+      if (!container || !zoomView) return;
+
+      const rect = container.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Only update if cursor is within image bounds
+      if (isInImageBounds(x, y, rect)) {
+        const position = calculateZoomPosition(x, y, rect);
+        if (position) {
+          const { x: xPos, y: yPos } = position;
+          zoomView.style.backgroundPosition = `${xPos}% ${yPos}%`;
+        }
+      }
+    }, THROTTLE_MS),
+    []
+  );
+
+  // Add confirmAddToCart function
+  const confirmAddToCart = () => {
+    addProductToCart();
+    setShowCustomizationModal(false);
+    setIsInCart(true);
+    toast.success(`${product.name} added to cart`, {
+      duration: 2000,
+      position: 'top-center',
+      style: {
+        background: '#4F46E5',
+        color: '#fff',
+        padding: '16px',
+        borderRadius: '8px',
+      },
+      icon: '🛒',
+    });
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <Link href="/products">
@@ -572,123 +684,187 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
       <div className="mt-8 flex flex-col md:flex-row gap-8 relative min-h-screen">
         {/* LEFT SECTION: Thumbnails, Main Image, and Cart */}
-        <div className="md:w-3/5 flex flex-col sticky top-8" style={{ height: 'fit-content' }}>
-          <div className="flex flex-row">
-            {/* Thumbnails Column */}
-            <div
-              className="flex flex-col gap-2 overflow-y-auto pr-2"
-              style={{ maxHeight: "800px", width: "80px" }}
-            >
-              {galleryImages.map((img: string, index: number) => (
-                <div
-                  key={index}
-                  className={`relative w-[60px] h-[60px] border rounded cursor-pointer flex-shrink-0 ${
-                    selectedImage === index
-                      ? "border-blue-600"
-                      : "border-gray-200 hover:border-blue-400"
-                  }`}
-                  onClick={() => setSelectedImage(index)}
-                >
-                  <Image
-                    src={img}
-                    alt={`Thumbnail ${index + 1}`}
-                    fill
-                    className="object-cover rounded"
-                  />
-                </div>
-              ))}
+        <div className="md:w-3/5 relative">
+          <div className="sticky top-8">
+            <div className="flex flex-row">
+              {/* Thumbnails Column */}
+              <div className="flex flex-col gap-2 overflow-y-auto pr-2">
+                {galleryImages.map((img: string, index: number) => (
+                  <div
+                    key={index}
+                    className={`relative w-[60px] h-[60px] border rounded cursor-pointer flex-shrink-0 ${
+                      selectedImage === index
+                        ? "border-blue-600"
+                        : "border-gray-200 hover:border-blue-400"
+                    }`}
+                    onClick={() => {
+                      setSelectedImage(index);
+                      setProgress(0); // Reset progress on manual selection
+                    }}
+                    onMouseEnter={() => setIsHovering(true)}
+                    onMouseLeave={() => setIsHovering(false)}
+                  >
+                    <Image
+                      src={img}
+                      alt={`Thumbnail ${index + 1}`}
+                      fill
+                      className="object-cover rounded"
+                    />
+                    {/* Add indicator for current image */}
+                    {selectedImage === index && !isHovering && (
+                      <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-200">
+                        <div
+                          className="h-full bg-blue-600 transition-all duration-100"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Main Image Container */}
+              <div
+                ref={imageContainerRef}
+                className="relative flex-grow border rounded-lg mb-4 cursor-zoom-in overflow-hidden"
+                onMouseEnter={() => {
+                  setIsHovering(true);
+                  setIsZooming(true);
+                }}
+                onMouseMove={handleZoom}
+                onMouseLeave={() => {
+                  setIsHovering(false);
+                  setIsZooming(false);
+                }}
+              >
+                <Image
+                  src={galleryImages[selectedImage]}
+                  alt="Main product"
+                  fill
+                  className="object-contain transition-opacity duration-300"
+                  priority
+                />
+              </div>
             </div>
 
-            {/* Main Image Container with Zoom Feature */}
-            <div
-              ref={imageContainerRef}
-              className="relative flex-grow border rounded-lg mb-4 cursor-pointer"
-              onMouseEnter={() => setIsZoomActive(true)}
-              onMouseMove={(e) => {
-                const rect = imageContainerRef.current?.getBoundingClientRect();
-                if (!rect) return;
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const xPercent = (x / rect.width) * 100;
-                const yPercent = (y / rect.height) * 100;
-                setZoomPos({
-                  backgroundX: `${xPercent}%`,
-                  backgroundY: `${yPercent}%`,
-                });
-              }}
-              onMouseLeave={() => setIsZoomActive(false)}
-            >
-              <Image
-                src={galleryImages[selectedImage]}
-                alt="Main product"
-                fill
-                className="object-contain transition-transform"
-                priority
-              />
+            {/* Add to Cart Button */}
+            <div className="mt-4 flex flex-col space-y-4">
+              {isAddedToCart ? (
+                <div className="flex items-center justify-between gap-4 bg-gray-50 p-4 rounded-lg">
+                  <div className="flex items-center gap-4">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleQuantityChange('decrement')}
+                    >
+                      -
+                    </Button>
+                    <span className="w-12 text-center font-medium">{quantity}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleQuantityChange('increment')}
+                    >
+                      +
+                    </Button>
+                  </div>
+                  <Link href="/cart">
+                    <Button>View Cart</Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="flex gap-4">
+                  <Button 
+                    onClick={handleAddToCart} 
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Add to Cart
+                  </Button>
+                  <Button 
+                    onClick={handleBuyNow}
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  >
+                    Buy Now
+                  </Button>
+                </div>
+              )}
             </div>
-          </div>
-          {/* Add to Cart Button */}
-          <div className="mt-4">
-            {isAddedToCart ? (
-              <div className="flex items-center justify-center gap-4">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    handleQuantityChange('decrement');
-                    if (quantity === 1) {
-                      setIsAddedToCart(false);
-                    }
-                  }}
-                >
-                  -
-                </Button>
-                <span className="w-12 text-center">{quantity}</span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleQuantityChange('increment')}
-                >
-                  +
-                </Button>
-              </div>
-            ) : (
-              <Button 
-                onClick={handleAddToCart} 
-                className="w-full"
-              >
-                Add to Cart
-              </Button>
-            )}
           </div>
         </div>
 
-        {/* RIGHT SECTION: Product Details or Zoom View */}
+        {/* RIGHT SECTION: Product Details & Zoom View */}
         <div className="md:w-2/5">
-          {isZoomActive ? (
-            <div
-              className="w-full h-[600px] border rounded-lg transition-all duration-200 sticky top-8"
-              style={{
-                backgroundImage: `url(${galleryImages[selectedImage]})`,
-                backgroundRepeat: "no-repeat",
-                backgroundSize: "300%",
-                backgroundPosition: `${zoomPos.backgroundX} ${zoomPos.backgroundY}`,
-              }}
-            ></div>
-          ) : (
-            <div className="space-y-6">
-              <h1 className="text-2xl font-bold">{productTitle}</h1>
-              <div className="flex items-center">
-                <span className="text-2xl font-semibold text-black">
+          <div className="sticky top-24 space-y-8">
+            {/* Product Title and Rating */}
+            <div className="space-y-4">
+              <h1 className="text-3xl font-bold tracking-tight">{productTitle}</h1>
+              
+              {/* Price Section with Better Styling */}
+              <div className="flex items-baseline gap-4">
+                <span className="text-4xl font-bold text-blue-600">
                   ₹{product.discountedPrice.toFixed(2)}
                 </span>
-                <span className="ml-3 text-lg line-through text-gray-500">
+                <span className="text-xl text-gray-500 line-through">
                   ₹{product.price.toFixed(2)}
                 </span>
+                <span className="text-green-600 font-medium">
+                  {Math.round(((product.price - product.discountedPrice) / product.price) * 100)}% OFF
+                </span>
               </div>
-              {productFeatures}
+
+              {/* Quick Highlights */}
+              <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                <h3 className="font-semibold text-lg">Highlights</h3>
+                <ul className="space-y-2">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <span>AI-Powered Smart Templates</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <span>Reusable up to 100 times</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <span>Cloud Integration & Sync</span>
+                  </li>
+                </ul>
+              </div>
             </div>
-          )}
+
+            {/* Features with Better Layout */}
+            <div className="prose prose-blue max-w-none">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg">
+                {productFeatures}
+              </div>
+            </div>
+
+            {/* Zoom View - Keep existing zoom functionality */}
+            {isZooming && (
+              <div 
+                className="fixed top-20 right-4 z-50"
+                style={{ 
+                  width: '600px', 
+                  height: '600px',
+                  maxWidth: '40vw',
+                  maxHeight: 'calc(100vh - 120px)'  // Leave space for header
+                }}
+              >
+                <div
+                  ref={zoomViewRef}
+                  className="w-full h-full border rounded-lg overflow-hidden bg-white shadow-xl"
+                  style={{
+                    backgroundImage: `url(${galleryImages[selectedImage]})`,
+                    backgroundRepeat: "no-repeat",
+                    backgroundSize: `${ZOOM_MAGNIFICATION * 100}%`,
+                    backgroundPosition: "center",
+                    willChange: "background-position"
+                  }}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

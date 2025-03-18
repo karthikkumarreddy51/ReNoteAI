@@ -61,14 +61,23 @@ export default function Header() {
     { name: "How It Works", href: "/#how-to-use-section" },
     { name: "About Us", href: "/#achievements-section" },
     { name: "Contact", href: "/#contact" },
+    { name: "Download Now", href: "/#download-app" }, // Add this line
   ];
 
   const handleNavLinkClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
     href: string
   ) => {
-    // If it's a hash link on the homepage, handle smooth scrolling
-    if (href.startsWith("/#") && pathname === "/") {
+    if (href === "/" && pathname === "/") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (href === "/#download-app") {
+      e.preventDefault();
+      const footerElement = document.getElementById("footer");
+      if (footerElement) {
+        footerElement.scrollIntoView({ behavior: "smooth" });
+      }
+    } else if (href.startsWith("/#") && pathname === "/") {
       e.preventDefault();
       const targetId = href.substring(2);
       const targetElement = document.getElementById(targetId);
@@ -138,16 +147,16 @@ export default function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <div className="relative w-10 h-10 mr-2">
+            <div className="relative w-16 h-16">
               <Image
                 src={ReNoteLogo}
-                alt="ReNote AI Logo"
+                alt="Logo"
                 fill
                 className="object-contain rounded-lg"
                 priority
               />
             </div>
-            <span className="font-bold text-xl hidden sm:inline-block">ReNote AI</span>
+            {/* Removed "ReNote AI" text */}
           </Link>
 
           {/* Desktop Navigation */}

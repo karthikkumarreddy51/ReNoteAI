@@ -7,6 +7,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    // Use a fallback base URL if NEXT_PUBLIC_BASE_URL is not defined
+    const baseURL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    // Create an absolute URL for the Razorpay API endpoint
+    const razorpayURL = new URL('/api/razorpay', baseURL).href;
+    
+    // Log baseURL for debugging
+    console.log('Using baseURL:', baseURL, 'and razorpayURL:', razorpayURL);
+
     const { 
       paymentDetails, 
       orderDetails, 
@@ -14,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } = req.body;
 
     // 1. Verify payment with Razorpay
-    const verifyResponse = await fetch('/api/razorpay', {
+    const verifyResponse = await fetch(razorpayURL, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(paymentDetails)

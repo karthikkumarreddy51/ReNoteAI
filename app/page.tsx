@@ -32,6 +32,13 @@ import NvidiaImg from "../images/achievements/nvidia.png";
 import AICImg from "../images/achievements/aic.png";
 import THubImg from "../images/achievements/thub.png";
 
+import Li1 from "../images/Linkedin photos/li1.png";
+import Li2 from "../images/Linkedin photos/li2.jpg";
+import Li3 from "../images/Linkedin photos/li3.png";
+import Li4 from "../images/Linkedin photos/li4.jpg";
+import Li5 from "../images/Linkedin photos/li5.jpg";
+import Li6 from "../images/Linkedin photos/li6.jpg";
+
 interface Product {
   id: string;
   image?: string;
@@ -362,7 +369,7 @@ export default function HomePage() {
             {[
               {
                 image: HTU1,
-                step: "Step 1",
+                step: "", // Or remove this line
                 title: "Write, Erase & Perfect",
                 content: (
                   <div className="space-y-6">
@@ -417,7 +424,7 @@ export default function HomePage() {
               },
               {
                 image: HTU2,
-                step: "Step 2",
+                step: "", // Or remove this line
                 title: "Smart Sync & Integration",
                 content: (
                   <div className="space-y-6">
@@ -459,21 +466,22 @@ export default function HomePage() {
               },
               {
                 image: HTU3,
-                step: "Step 3",
+                step: "", // Or remove this line
                 title: "AI Bot & OCR",
                 description: "Convert handwriting to digital text with AI assistance. Use AI summarization and smart search for quick access."
               },
               {
                 image: HTU4,
-                step: "Step 4",
+                step: "", // Or remove this line
                 title: "Effortless Erasing",
                 description: "Use the in-built eraser in the pen to undo, and to erase the full page use a wet cloth or tissue."
               }
             ].map((item, index) => (
               <div key={index} className="group relative bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-500">
-                <div className="absolute top-4 left-4 z-10">
-                  <span className="bg-primary/90 text-white px-4 py-1 rounded-full text-sm font-semibold backdrop-blur-sm">
-                    {item.step}
+                {/* Update the step indicator styling */}
+                <div className="absolute top-4 right-4 z-10">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 font-medium">
+                    {index + 1}
                   </span>
                 </div>
                 
@@ -605,12 +613,72 @@ export default function HomePage() {
         </div>
       </section>
 
-     
+      {/* LinkedIn Posts Section */}
+      <section className="py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+              Our Product out in the world!
+            </h2>
+            <Link 
+              href="https://www.linkedin.com/company/renoteai/posts/?feedView=all"
+              target="_blank"
+              className="group flex items-center text-blue-600 hover:text-blue-800 font-medium transition-all duration-300"
+            >
+              View all posts
+              <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform duration-300" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              { img: Li1, link: "https://www.linkedin.com/posts/renoteai_globalaisummit-renoteai-aiinnovation-activity-7237387130526728192-wuY6/?utm_source=share&utm_medium=member_desktop", matter: "Global AI Summit at Hyderabad" },
+              { img: Li2, link: "https://www.linkedin.com/posts/renoteai_renoteai-gitex2024-smartsustainableworld-activity-7257722929835094016-X6as/?utm_source=share&utm_medium=member_desktop", matter: "ReNote AI at GITEX Global 2024!" },
+              { img: Li3, link: "https://www.linkedin.com/posts/renoteai_ices2024-indiacsrandesgsummit2024-sustainability-activity-7252929908190978048-It8J/?utm_source=share&utm_medium=member_desktop", matter: "India CSR & ESG Summit 2024" },
+              { img: Li4, link: "https://www.linkedin.com/posts/renoteai_bangaloreexpansion-renoteai-giftsworldexpo2024-activity-7233767274350796800-wJw4/?utm_source=share&utm_medium=member_desktop", matter: "Gifts World Expo 2024 at Bangalore" },
+              { img: Li5, link: "https://www.linkedin.com/posts/renoteai_sustainability-renoteai-ecofriendly-activity-7230812292840366080-cMs5/?utm_source=share&utm_medium=member_desktop", matter: "Eco Sustain Expo 2024 at Hyderabad" },
+              { img: Li6, link: "https://www.linkedin.com/posts/renoteai_renoteai-giftsexpodelhi-b2b-activity-7224333647363915776-e2G1/?utm_source=share&utm_medium=member_desktop", matter: "Gifts World Expo 2024 at Delhi" },
+            ].map((item, index) => (
+              <div key={index} className="group perspective-1000">
+                <Link 
+                  href={item.link} 
+                  target="_blank"
+                  className="block overflow-hidden rounded-2xl bg-white shadow-lg hover:shadow-2xl transform-gpu transition-all duration-500 hover:scale-[1.02] relative"
+                >
+                  <div className="relative w-full h-[500px] overflow-hidden"> {/* Removed rounded corners from container */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <Image
+                      src={item.img}
+                      alt={`LinkedIn Post ${index + 1}`}
+                      fill
+                      className="object-contain bg-white transition-transform duration-500 group-hover:scale-105 rounded-[2rem] p-4" /* Added rounded corners and padding to the image */
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                    {/* Shine effect overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 translate-x-[-200%] group-hover:translate-x-[200%] transition-all duration-1000" />
+                  </div>
+                  <div className="p-6 bg-white border-t transform transition-transform duration-300 rounded-b-2xl"> {/* Added rounded corners */}
+                    <p className="text-gray-800 font-semibold text-lg text-center group-hover:text-blue-600 transition-colors duration-300">
+                      {item.matter}
+                    </p>
+                    <div className="mt-2 flex justify-center">
+                      <span className="inline-flex items-center text-sm text-blue-600 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                        View on LinkedIn
+                        <ArrowRight className="ml-1 h-4 w-4" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Contact Us Section */}
       <section id="contact" className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
-          <ContactForm />
+          <ContactForm messageRequired={false} />
         </div>
       </section>
 

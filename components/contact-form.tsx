@@ -5,10 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail } from "lucide-react";
 
-export default function ContactForm() {
+interface ContactFormData {
+  name: string;
+  email: string;
+  phone: string;
+  message?: string; // changed: mark message as optional to allow deletion
+}
+
+export default function ContactForm({ messageRequired = true }: { messageRequired?: boolean }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formStatus, setFormStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ContactFormData>({
     name: '',
     email: '',
     phone: '',
@@ -28,24 +35,31 @@ export default function ContactForm() {
     setFormStatus('idle');
 
     console.log('Form data submitted:', formData);
-
+    
+    // Provide default values for fields that may be empty to satisfy API requirements
+    const payload = {
+      ...formData,
+      message: formData.message ? formData.message : "No message provided",
+      phone: formData.phone ? formData.phone : "N/A"
+    };
+    
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
-
+      
       const data = await response.json();
-
+      
       if (!response.ok) {
         throw new Error(data.error || 'Failed to send message');
       }
-
+      
       console.log('Form submission successful:', data);
-
+      
       setFormStatus('success');
       setFormData({ name: '', email: '', phone: '', message: '' });
     } catch (error) {
@@ -65,7 +79,6 @@ export default function ContactForm() {
           Have a question? We'd love to hear from you.
         </p>
       </div>
-
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -113,14 +126,14 @@ export default function ContactForm() {
 
         <div>
           <label htmlFor="message" className="block text-sm font-medium mb-2">
-            Message *
+            Message {messageRequired && '*'}
           </label>
           <Textarea
             id="message"
             name="message"
             value={formData.message}
             onChange={handleChange}
-            required
+            required={messageRequired}
             placeholder="How can we help you?"
             rows={4}
           />
